@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js" defer></script>
+  <title>Películas y Series - Plantillas Plus</title>
+  <style>
+    /* Loader */
+    .loader {position: fixed; top:0; left:0; width:100%; height:100%; background:#0f0f0f; display:flex; justify-content:center; align-items:center; z-index:9999;}
+    .spinner {border:6px solid #222; border-top:6px solid #e50914; border-radius:50%; width:50px; height:50px; animation:spin 1s linear infinite;}
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .movie-item {opacity:0; transform:scale(0.95); animation:fadeIn 0.6s forwards;}
+    @keyframes fadeIn { to { opacity:1; transform:scale(1); } }
+    .ver-mas-container {text-align:center; margin:20px 0;}
+    .ver-mas-btn {background:#e50914; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;}
+    .ver-mas-btn:hover {background:#b20710;}
+    .tabs .tab a:focus, .tabs .tab a:focus.active {background:none}
+    .padDrew {padding:10px 0; margin:30px 0}
+    .row .col {padding:5px}
+    .each-category {padding:0 5px}
+    .sidenav li > a {margin:0 10px; background:#212121; color:rgb(222,215,215); border-radius:3px; display:flex; align-items:center; gap:10px; padding:0 10px}
+    #nav-mobile a.active-sidenav, .sidenav li > a.active-sidenav {background:rgba(60,128,85,.2); color:#20bf6b}
+    #nav-mobile a {font-weight:600}
+    .tab a, .sidenav li a {font-weight:600}
+    img.circle {border-radius:100%; overflow:hidden}
+    .banner {display:flex; gap:10px; padding:10px; background:rgb(20,20,20)}
+    .sidenav li {line-height:0}
+    * {list-style-type:none}
+    .containerb {position:absolute; margin:auto; top:0; right:0; bottom:0; height:100px; width:100%}
+    .containerb .search {position:absolute; margin:auto; top:0; right:0; bottom:0; width:50px; height:50px; background:crimson; border-radius:50%; transition:all 1s; z-index:4; box-shadow:0 0 25px 0 rgba(0,0,0,0.4);}
+    .containerb .search:hover {cursor:pointer}
+    .containerb .search::before {content:""; position:absolute; margin:auto; top:18px; right:0; bottom:0; left:17px; width:12px; height:2px; background:white; transform:rotate(45deg); transition:all .5s}
+    .containerb .search::after {content:""; position:absolute; margin:auto; top:-5px; right:0; bottom:0; left:-5px; width:20px; height:20px; border-radius:50%; border:2px solid white; transition:all .5s}
+    .containerb input {position:absolute; margin:auto!important; top:0; right:0; bottom:0; width:50px!important; height:50px!important; background:crimson; color:white; transition:all 0.7s!important; padding:0 5px 0 20px!important; opacity:0; z-index:5}
+    .containerb input:hover {cursor:pointer}
+    .containerb input:focus {width:100%!important; opacity:1; left:0; cursor:text; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color:#e3e3e3}
+    .containerb input:focus ~ .search {background:#151515; z-index:6}
+    .containerb input:focus ~ .search::before {top:0; left:0; width:25px}
+    .containerb input:focus ~ .search::after {top:0; left:0; width:25px; height:2px; border:none; background:white; border-radius:0%; transform:rotate(-45deg)}
+    .containerb input::placeholder {color:white; opacity:0.5; font-weight:bolder}
+    .poster-card {position:relative; overflow:hidden; border-radius:8px}
+    .poster-card img {width:100%; height:200px; object-fit:cover; display:block; border-radius:8px; transition:transform .3s}
+    .poster-card img:hover {transform:scale(1.05);}
+    .poster-overlay {position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.7); color:white; padding:8px; text-align:center}
+    .poster-overlay h6 {margin:0; font-size:0.6rem; font-weight:600}
+    .rating {display:flex; align-items:center; justify-content:center; color:#ffcc00; font-size:0.6rem; margin-top:2px}
+    .type-label {position:absolute; top:8px; left:8px; background:#e50914; color:white; padding:2px 6px; font-size:0.3rem; font-weight:bold; border-radius:4px; z-index:5; text-transform:uppercase;}
+    .fav-btn {position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:6;}
+    .fav-btn.active {color:#e50914;}
+    .transparent-nav {background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.3s ease;}
+    .transparent-nav.scrolled {background: rgba(0,0,0,0.7);}
+    body::before {content: ''; position: fixed; top: 0; left: 0; height: 100%; width: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url('https://pbs.twimg.com/media/Gp972OIWMAAeIHy?format=jpg&name=4096x4096') no-repeat center center/cover; z-index: -1;}
+    .small-note {color: #bbb; font-size: .85rem; text-align:center; padding:10px 0;}
+  </style>
+</head>
+<body class="grey darken-4">
+  <div class="loader"><div class="spinner"></div></div>
+
+  <div class="navbar-fixed">
+    <nav class="nav-extended transparent-nav">
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo">Peliculas+</a>
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+          <li><a href="#TODAS" class="active-sidenav">Películas</a></li>
+          <li><a href="#FAVORITOS">Favoritos</a></li>
+        </ul>
+        <div class="containerb">
+          <input type="text" placeholder="Buscar..." id="buscar" />
+          <div class="search"></div>
+        </div>
+      </div>
+      <div class="nav-content">
+        <ul class="tabs tabs-transparent" id="genreTabs">
+          <li class="tab"><a href="#TODAS" class="active">Todas</a></li>
+          <li class="tab"><a href="#NETFLIX">Netflix</a></li>
+          <li class="tab"><a href="#ESTRENOS">Estrenos</a></li>
+          <li class="tab"><a href="#SERIES">Series</a></li>
+          <li class="tab"><a href="#FAVORITOS">Favoritos</a></li>
+          <!-- Géneros dinámicos se añadirán aquí -->
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <ul class="sidenav grey darken-4" id="mobile-demo">
+    <li class="row banner">
+      <div class="col s4">
+        <img src="https://plantillasplus.com/wp-content/uploads/2024/06/nuevologotipo-pp-150x150.png" alt="" class="responsive-img circle" />
+      </div>
+      <div class="col s8">
+        <h4 class="white-text">Cine Ramirez!</h4>
+      </div>
+    </li>
+    <li><a href="go:anime"><span class="material-icons">new_releases</span> Heitan +18</a></li>
+  </ul>
+  <br>
+  <div class="each-category" id="sections"></div>
+
+  <script>
+    // ---------- CONFIG ----------
+    const API_KEY = "cc5b94165972aa509a349161d13d4fc9";
+    const TMDB_URL = "https://api.themoviedb.org/3";
+    const IMG_URL = "https://image.tmdb.org/t/p/w500";
+    const PLACEHOLDER = "https://via.placeholder.com/500x750?text=No+Image";
+    const PROVIDERS_COUNTRY = "MX"; // país para chequear providers (se carga solo en pestaña Netflix)
+
+    // ---------- LISTAS (manuales) ----------
+    const peliculasManual = [
+    { id: 1278950, link: 'https://infanpelis.blogspot.com/2025/10/exorcismo-el-ritual.html ' },
+      { id: 1289936, link: 'https://infanpelis.blogspot.com/2025/10/downton-abbey-el-gran-final.html ' },
+      { id: 10585, link: 'https://infanpelis.blogspot.com/2025/10/chucky-el-muneco-diabolico.html ' },
+      { id: 11186, link: 'https://infanpelis.blogspot.com/2025/10/chucky-el-muneco-diabolico-2.html ' },
+      { id: 11187, link: 'https://infanpelis.blogspot.com/2025/10/chucky-el-muneco-diabolico-3.html ' },
+      { id: 11932, link: 'https://infanpelis.blogspot.com/2025/10/la-novia-de-chucky.html ' },
+      { id: 11249, link: 'https://infanpelis.blogspot.com/2025/10/el-hijo-de-chucky.html ' },
+{ id: 381283, link: 'https://infanpelis.blogspot.com/2025/10/madre.html ' },
+      { id: 540901, link: 'https://infanpelis.blogspot.com/2025/10/estafadoras-de-wall-street.html ' },
+{ id: 9479, link: 'https://infanpelis.blogspot.com/2025/10/el-extrano-mundo-de-jack.html ' },
+      { id: 3933, link: 'https://infanpelis.blogspot.com/2025/10/el-cadaver-de-la-novia.html ' },
+{ id: 300669, link: 'https://infanpelis.blogspot.com/2025/10/no-respires.html ' },
+      { id: 482373, link: 'https://infanpelis.blogspot.com/2025/10/no-respires-2.html ' },
+{ id: 1233413, link: 'https://infanpelis.blogspot.com/2025/10/pecadores.html ' },
+{ id: 264419, link: 'https://infanpelis.blogspot.com/2025/10/un-gallo-con-muchos-huevos.html ' },
+      { id: 16761, link: 'https://infanpelis.blogspot.com/2025/10/una-pelicula-de-huevos.html ' },
+      { id: 37221, link: 'https://infanpelis.blogspot.com/2025/10/otra-pelicula-de-huevos-y-un-pollo.html ' },
+      { id: 1245993, link: 'https://infanpelis.blogspot.com/2025/10/atrapado-robando.html ' },
+      { id: 1054867, link: 'https://infanpelis.blogspot.com/2025/10/una-batalla-tras-otra.html ' },
+      { id: 617126, link: 'https://infanpelis.blogspot.com/2025/09/los-4-fantasticos-primeros-pasos.html ' },
+      { id: 1078605, link: 'https://infanpelis.blogspot.com/2025/09/weapons-la-hora-de-la-desaparecion-2025.html ' },
+      { id: 1038392, link: 'https://infanpelis.blogspot.com/2025/09/el-conjuro-4-ultimos-ritos-2025.html ' },
+      { id: 565770, link: 'https://infanpelis.blogspot.com/2025/09/blue-beetle.html ' },
+      { id: 634492, link: ' https://infanpelis.blogspot.com/2025/09/madame-web.html' },
+      { id: 1069387, link: 'https://infanpelis.blogspot.com/2025/09/pedro-paramo.html ' },
+      { id: 654299, link: 'https://infanpelis.blogspot.com/2025/09/como-caido-del-cielo.html ' },
+      { id: 864959, link: 'https://infanpelis.blogspot.com/2025/09/la-maldicion-de-bridge-hollow.html ' },
+      { id: 777443, link: ' https://infanpelis.blogspot.com/2025/09/estado-electrico.html' },
+      { id: 763215, link: ' https://infanpelis.blogspot.com/2025/09/damsel.html' },
+      { id: 1151031, link: ' https://infanpelis.blogspot.com/2025/09/haz-que-regrese.html' },
+      { id: 14098, link: 'https://infanpelis.blogspot.com/2025/09/acoso-del-mas-alla.html ' },
+      { id: 443849, link: ' https://infanpelis.blogspot.com/2025/09/winter-ridge.html' },
+      { id: 166424, link: 'https://infanpelis.blogspot.com/2025/09/los-4-fantasticos_29.html ' },
+      { id: 1979, link: ' https://infanpelis.blogspot.com/2025/09/los-4-fantasticos-y-silver-surfer.html' },
+      { id: 9738, link: 'https://infanpelis.blogspot.com/2025/09/los-4-fantasticos.html ' },
+      { id: 6957, link: 'https://infanpelis.blogspot.com/2025/09/virgen-los-40.html ' },
+      { id: 581392, link: 'https://infanpelis.blogspot.com/2025/09/estacion-zombie-2-peninsula.html ' },
+      { id: 396535, link: ' https://infanpelis.blogspot.com/2025/09/estacion-zombie-tren-busan.html' },
+      { id: 1427, link: ' https://infanpelis.blogspot.com/2025/09/el-perfume-historia-de-un-asesino.html' },
+      { id: 1319965, link: 'https://infanpelis.blogspot.com/2025/09/todo-de-ti.html ' },
+      { id: 26393, link: ' https://infanpelis.blogspot.com/2025/09/un-amor-inconcluso.html' },
+      { id: 829560, link: 'https://infanpelis.blogspot.com/2025/09/365-dias-mas-3.html' },
+      { id: 829557, link: 'https://infanpelis.blogspot.com/2025/09/365-dias-aquel-dia.html ' },
+      { id: 664413, link: 'https://infanpelis.blogspot.com/2025/09/365-dias.html ' },
+      { id: 1425045, link: 'https://infanpelis.blogspot.com/2025/09/el-muro-negro.html ' },
+      { id: 560050, link: 'https://infanpelis.blogspot.com/2025/09/mas-alla-de-la-luna.html ' },
+      { id: 1084153, link: 'https://infanpelis.blogspot.com/2025/09/sneaks-un-par-con-suerte.html ' },
+      { id: 184345, link: 'https://infanpelis.blogspot.com/2025/09/y-donde-esta-el-fantasma-2.html ' },
+      { id: 139038, link: 'https://infanpelis.blogspot.com/2025/09/y-donde-esta-el-fantasma.html ' },
+      { id: 854, link: ' https://infanpelis.blogspot.com/2025/09/la-mascara.html' },
+      { id: 10214, link: 'https://infanpelis.blogspot.com/2025/09/el-hijo-de-la-mascara.html ' },
+      { id: 509585, link: 'https://infanpelis.blogspot.com/2025/09/7500.html' },
+      { id: 598175, link: ' https://infanpelis.blogspot.com/2025/09/blackwood.html' },
+      { id: 405774, link: 'https://infanpelis.blogspot.com/2025/09/bird-box-ciegas.html ' },
+      { id: 16871, link: ' https://infanpelis.blogspot.com/2025/09/arrastrame-al-infierno.html' },
+      { id: 424121, link: 'https://infanpelis.blogspot.com/2025/09/apostol.html ' },
+      { id: 153518, link: 'https://infanpelis.blogspot.com/2025/09/angry-birds-la-pelicula.html ' },
+      { id: 454640, link: 'https://infanpelis.blogspot.com/2025/09/angry-birds-2-la-pelicula.html ' },
+      { id: 12153, link: 'https://infanpelis.blogspot.com/2025/09/y-donde-estan-las-rubias.html ' },
+      { id: 503619, link: 'https://infanpelis.blogspot.com/2025/09/el-paquete.html ' },
+      { id: 120, link: ' https://infanpelis.blogspot.com/2025/09/el-senor-de-los-anillos-la-comunidad.html' },
+      { id: 121, link: 'https://infanpelis.blogspot.com/2025/09/el-senor-de-los-anillos-las-dos-torres.html ' },
+      { id: 122, link: ' https://infanpelis.blogspot.com/2025/09/el-senor-de-los-anillos-el-retorno-del.html' },
+      { id: 851644, link: 'https://infanpelis.blogspot.com/2025/09/una-chica-del-siglo-xx.html ' },
+      { id: 563, link: 'https://infanpelis.blogspot.com/2025/09/starship-troopers.html ' },
+      { id: 617, link: 'https://infanpelis.blogspot.com/2025/09/criaturas-salvajes.html ' },
+      { id: 10367, link: 'https://infanpelis.blogspot.com/2025/09/criaturas-salvajes-2.html ' },
+      { id: 17124, link: 'https://infanpelis.blogspot.com/2025/09/criaturas-salvajes-3.html ' },
+      { id: 37708, link: ' https://infanpelis.blogspot.com/2025/09/criaturas-salvajes-4-deseos-prohibidos.html' },
+      { id: 500921, link: ' https://infanpelis.blogspot.com/2025/09/el-portal-del-mas-alla.html' },
+      { id: 931935, link: 'https://infanpelis.blogspot.com/2025/09/la-extorsion.html ' },
+      { id: 11324, link: 'https://infanpelis.blogspot.com/2025/09/la-isla-siniestra.html ' },
+      { id: 619730, link: 'https://infanpelis.blogspot.com/2025/09/no-te-preocupes-carino.html ' },
+      { id: 384680, link: 'https://infanpelis.blogspot.com/2025/09/hostiles.html ' },
+      { id: 938, link: ' https://infanpelis.blogspot.com/2025/09/por-unos-dolares-mas.html' },
+      { id: 414906, link: 'https://infanpelis.blogspot.com/2025/09/batman.html ' },
+      { id: 49026, link: 'https://infanpelis.blogspot.com/2025/09/batman-el-caballero-de-la-noche-asciende.html ' },
+      { id: 155, link: 'https://infanpelis.blogspot.com/2025/09/batman-el-caballero-de-la-noche.html ' },
+      { id: 272, link: 'https://infanpelis.blogspot.com/2025/09/batman-inicia.html ' },
+      { id: 2675, link: 'https://infanpelis.blogspot.com/2025/09/senales.html ' },
+      { id: 1576, link: ' https://infanpelis.blogspot.com/2025/09/resident-evil-el-huesped-maldito.html' },
+      { id: 1577, link: 'https://infanpelis.blogspot.com/2025/09/resident-evil-apocalipsis.html ' },
+      { id: 7737, link: 'https://infanpelis.blogspot.com/2025/09/resident-evil-3-la-extincion.html ' },
+      { id: 35791, link: 'https://infanpelis.blogspot.com/2025/09/resident-evil-4-la-resurreccion.html ' },
+      { id: 71679, link: 'https://infanpelis.blogspot.com/2025/09/resident-evil-5-la-venganza.html ' },
+      { id: 173897, link: ' https://infanpelis.blogspot.com/2025/09/resident-evil-6-capitulo-final.html' },
+      { id: 400136, link: ' https://infanpelis.blogspot.com/2025/09/resident-evil-venganza.html' },
+      { id: 1083862, link: ' https://infanpelis.blogspot.com/2025/09/resident-evil-isla-de-la-muerte.html' },
+      { id: 460458, link: 'https://infanpelis.blogspot.com/2025/09/resident-evil-bienvenidos-raccoon-city.html ' },
+      { id: 1100988, link: ' https://infanpelis.blogspot.com/2025/09/exterminio-la-evolucion.html' },
+      { id: 7347, link: 'https://infanpelis.blogspot.com/2025/09/tropa-de-elite.html ' },
+      { id: 47931, link: 'https://infanpelis.blogspot.com/2025/09/tropa-de-elite-2.html ' },
+      { id: 1294203, link: 'https://infanpelis.blogspot.com/2025/09/culpa-mia-londres.html ' },
+      { id: 1156593, link: 'https://infanpelis.blogspot.com/2025/09/culpa-tuya.html ' },
+      { id: 1010581, link: ' https://infanpelis.blogspot.com/2025/09/culpa-mia.html' },
+      { id: 1252309, link: 'https://infanpelis.blogspot.com/2025/09/pideme-lo-que-quieras.html ' },
+      { id: 9614, link: ' https://infanpelis.blogspot.com/2025/09/happy-gilmore.html' },
+      { id: 1263256, link: 'https://infanpelis.blogspot.com/2025/09/happy-gilmore-2.html ' },
+      { id: 936108, link: ' https://infanpelis.blogspot.com/2025/09/pitufos.html' },
+      { id: 1311031, link: 'https://infanpelis.blogspot.com/2025/09/demon-slayer-kimetsu-no-yaiba-castillo.html ' },
+      { id: 1087192, link: ' https://infanpelis.blogspot.com/2025/09/como-entrenar-tu-dragon-60fps.html' },
+      { id: 1071585, link: 'https://infanpelis.blogspot.com/2025/09/megan-20-60fps.html ' },
+      { id: 1011477, link: 'https://infanpelis.blogspot.com/2025/09/karate-kid-leyendas-60fps.html ' },
+      { id: 552524, link: 'https://infanpelis.blogspot.com/2025/09/lilo-y-stitch-60fps.html ' },
+      { id: 1326106, link: ' https://infanpelis.blogspot.com/2025/09/kaiju-no-8-mision-de-reconocimiento.html' },
+      { id: 1402, link: 'https://infanpelis.blogspot.com/2025/09/en-busca-de-la-felicidad.html ' },
+      { id: 999243, link: 'https://infanpelis.blogspot.com/2025/09/verano-infernal-60fps.html ' },
+      { id: 10047, link: ' https://infanpelis.blogspot.com/2025/09/juana-de-arco.html' },
+      { id: 277, link: 'https://infanpelis.blogspot.com/2025/09/inframundo-60fps.html ' },
+      { id: 834, link: ' https://infanpelis.blogspot.com/2025/09/inframundo-la-evolucion-60fps.html' },
+      { id: 12437, link: 'https://infanpelis.blogspot.com/2025/09/inframundo-3-la-rebelion-de-los-lycans.html ' },
+      { id: 502356, link: 'https://infanpelis.blogspot.com/2025/09/super-mario-bros-la-pelicula-60fps.html ' },
+      { id: 497, link: ' https://infanpelis.blogspot.com/2025/09/milagros-inesperados.html' },
+      { id: 9480, link: ' https://infanpelis.blogspot.com/2025/09/daredevil-el-hombre-sin-miedo.html' },
+      { id: 691363, link: 'https://infanpelis.blogspot.com/2025/09/el-retorno-de-los-muertos-vivientes.html ' },
+      { id: 507086, link: 'https://infanpelis.blogspot.com/2025/09/jurassic-world-dominio.html ' },
+      { id: 135397, link: ' https://infanpelis.blogspot.com/2025/09/jurassic-world.html' },
+      { id: 351286, link: ' https://infanpelis.blogspot.com/2025/09/jurassic-world-2-el-reino-caido.html' },
+      { id: 329, link: ' https://infanpelis.blogspot.com/2025/09/parque-jurasico.html' },
+      { id: 331, link: ' https://infanpelis.blogspot.com/2025/09/parque-jurasico-iii.html' },
+      { id: 330, link: ' https://infanpelis.blogspot.com/2025/09/el-mundo-perdido-jurassic-park.html' },
+      { id: 1234821, link: ' https://infanpelis.blogspot.com/2025/09/jurassic-world-renace-60fps.html' },
+      { id: 9757, link: 'https://infanpelis.blogspot.com/2025/09/norbit.html ' },
+      { id: 1007734, link: 'https://infanpelis.blogspot.com/2025/09/nadie-2.html ' },
+      { id: 1579, link: ' https://infanpelis.blogspot.com/2025/09/apocalypto.html' },
+      { id: 1049942, link: 'https://infanpelis.blogspot.com/2025/09/la-estimacion-de-bambi.html' },
+      { id: 1239655, link: 'https://infanpelis.blogspot.com/2025/09/friendship.html ' },
+      { id: 1242434, link: 'https://infanpelis.blogspot.com/2025/09/del-cielo-al-infierno.html ' },
+      { id: 1061474, link: 'https://infanpelis.blogspot.com/2025/09/superman-60fps.html ' },
+      { id: 3602, link: 'https://infanpelis.blogspot.com/2025/09/siempre-sabre-lo-que-hicieron-el-verano.html ' },
+      { id: 3600, link: 'https://infanpelis.blogspot.com/2025/09/todavia-se-lo-que-hicieron-el-verano.html ' },
+      { id: 423108, link: 'https://infanpelis.blogspot.com/2025/09/el-conjuro-3.html ' },
+      { id: 259693, link: ' https://infanpelis.blogspot.com/2025/09/el-conjuro-2.html' },
+      { id: 138843, link: 'https://infanpelis.blogspot.com/2025/09/el-conjuro-2013.html ' },
+      { id: 1246049, link: ' https://infanpelis.blogspot.com/2025/09/dracula-2025.html' },
+      { id: 1125257, link: ' https://infanpelis.blogspot.com/2025/09/otro-viernes-de-locos-2025.html' },
+      { id: 1098006, link: ' https://infanpelis.blogspot.com/2025/09/la-fuente-de-la-eterna-juventud-2025.html' },
+      { id: 1307516, link: 'https://infanpelis.blogspot.com/2025/09/tambien-esto-pasara-2025.html ' },
+      { id: 1083433, link: ' https://infanpelis.blogspot.com/2025/09/se-lo-que-hicisteis-el-ultimo-verano.html' },
+      { id: 1319969, link: 'https://infanpelis.blogspot.com/2025/09/dibujos-imaginarios-2025.html ' },
+      { id: 1200801, link: 'https://infanpelis.blogspot.com/2025/09/follar-casar-matar-2025.html ' },
+      { id: 1175942, link: 'https://infanpelis.blogspot.com/2025/09/los-tipos-malos-2-2025.html ' },
+      { id: 744653, link: 'https://infanpelis.blogspot.com/2025/09/el-club-del-crimen-de-los-jueves-2025.html ' },
+      { id: 582927, link: 'https://infanpelis.blogspot.com/2025/09/ya-no-estoy-aqui.html ' }
+    ];
+
+    const seriesManual = [
+      { id: 153312, link: 'https://infanpelis.blogspot.com/2025/09/tulsa-king-2022.html' },
+      { id: 113988, link: 'https://infanpelis.blogspot.com/2025/09/monstruo-la-historia-de-jeffrey-dahmer.html' },
+      { id: 138505, link: 'https://infanpelis.blogspot.com/2025/09/marvel-zombie.html' },
+      { id: 110492, link: 'https://infanpelis.blogspot.com/2025/09/peacemaker-el-pacificador.html' },
+      { id: 157239, link: 'https://infanpelis.blogspot.com/2025/09/alien-planeta-tierra.html' },
+      { id: 241388, link: 'https://infanpelis.blogspot.com/2025/09/los-ojos-de-wakanda.html' },
+      { id: 290276, link: 'https://infanpelis.blogspot.com/2025/09/pecados-inconfesables.html' },
+      { id: 119051, link: 'https://infanpelis.blogspot.com/2025/09/merlina.html' }
+    ];
+
+    // ---------- Estado global ----------
+    let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
+    let todasItems = [];    // items en el orden exacto introducido por el usuario
+    let netflixList = [];   // lista de items que están en Netflix (se llena al abrir pestaña)
+    let netflixLoaded = false;
+
+    // Map de géneros: genreId -> { name, items: [ {data,isSerie,link}, ... ] }
+    const genresMap = new Map();
+
+    // ---------- Helpers fetch ----------
+    async function getMovieData(id) {
+      try {
+        const res = await fetch(`${TMDB_URL}/movie/${id}?api_key=${API_KEY}&language=es-MX`);
+        if (!res.ok) throw new Error("Error en fetch película");
+        return await res.json();
+      } catch (err) {
+        console.warn("getMovieData error:", err);
+        return null;
+      }
+    }
+    async function getSerieData(id) {
+      try {
+        const res = await fetch(`${TMDB_URL}/tv/${id}?api_key=${API_KEY}&language=es-MX`);
+        if (!res.ok) throw new Error("Error en fetch serie");
+        return await res.json();
+      } catch (err) {
+        console.warn("getSerieData error:", err);
+        return null;
+      }
+    }
+    async function getMovieProviders(id) {
+      try {
+        const res = await fetch(`${TMDB_URL}/movie/${id}/watch/providers?api_key=${API_KEY}`);
+        if (!res.ok) throw new Error("Error en fetch providers");
+        return await res.json();
+      } catch (err) {
+        console.warn("getMovieProviders error:", err);
+        return null;
+      }
+    }
+
+    // ---------- Favoritos ----------
+    function saveFavoritos() { localStorage.setItem("favoritos", JSON.stringify(favoritos)); }
+    function isFavorito(dataId, isSerie) {
+      return favoritos.some(f => f.data && f.data.id === dataId && f.isSerie === isSerie);
+    }
+    function toggleFavorito(item) {
+      const idx = favoritos.findIndex(f => f.data && f.data.id === item.data.id && f.isSerie === item.isSerie);
+      if (idx >= 0) favoritos.splice(idx, 1);
+      else favoritos.push(item);
+      saveFavoritos();
+      buildFavoritos();
+      updateFavButtons();
+    }
+
+    // ---------- Procesar géneros (manteniendo orden manual) ----------
+    function processGenres(item) {
+      const gArr = item.data.genres || [];
+      gArr.forEach(g => {
+        if (!genresMap.has(g.id)) genresMap.set(g.id, { name: g.name, items: [] });
+        const list = genresMap.get(g.id).items;
+        // evitar duplicados
+        if (!list.some(x => x.data.id === item.data.id && x.isSerie === item.isSerie)) {
+          list.push(item);
+        }
+      });
+    }
+
+    // ---------- Crear tarjeta ----------
+    function escapeHtml(text) {
+      return (text + '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function createCard(data, isSerie = false, manualLink = null) {
+      const year = (isSerie ? (data.first_air_date || "") : (data.release_date || "")).slice(0, 4);
+      const title = isSerie ? (data.name || "") : (data.title || "");
+      const imgSrc = data.poster_path ? (IMG_URL + data.poster_path) : PLACEHOLDER;
+      const typeLabel = isSerie ? 'Serie' : 'Película';
+      const div = document.createElement('div');
+      div.className = 'col s4 m4 l3 movie-item';
+      div.dataset.id = data.id;
+      div.dataset.isserie = isSerie ? '1' : '0';
+
+      const href = manualLink ? manualLink.trim() : `go:${isSerie ? 'serie' : 'peli'}?id=${data.id}`;
+      const favActive = isFavorito(data.id, isSerie);
+
+      div.innerHTML = `
+        <div class="poster-card">
+          <span class="type-label">${typeLabel}</span>
+          <button class="fav-btn ${favActive ? 'active' : ''}" title="Agregar a favoritos"><i class="material-icons tiny">favorite</i></button>
+          <a href="${href}">
+            <img src="${imgSrc}" alt="${escapeHtml(title)}">
+            <div class="poster-overlay">
+              <h6>${escapeHtml(title)} ${year ? `(${year})` : ''}</h6>
+              <div class="rating"><i class="material-icons tiny yellow-text">star</i> ${data.vote_average ? data.vote_average.toFixed(1) : '0.0'}</div>
+            </div>
+          </a>
+        </div>`;
+
+      const favBtn = div.querySelector('.fav-btn');
+      favBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFavorito({ data, isSerie, link: manualLink });
+        favBtn.classList.toggle('active');
+      });
+
+      return div;
+    }
+
+    // ---------- Actualizar estado de botones favoritos visibles ----------
+    function updateFavButtons() {
+      document.querySelectorAll('.movie-item').forEach(itemEl => {
+        const id = Number(itemEl.dataset.id);
+        const isSerie = itemEl.dataset.isserie === '1';
+        const btn = itemEl.querySelector('.fav-btn');
+        if (!btn) return;
+        if (isFavorito(id, isSerie)) btn.classList.add('active'); else btn.classList.remove('active');
+      });
+    }
+
+    // ---------- Render con paginación ----------
+    function renderWithPagination(container, items) {
+      container.innerHTML = '';
+      const verMasDiv = document.createElement('div');
+      verMasDiv.className = 'ver-mas-container';
+      verMasDiv.innerHTML = `<button class="ver-mas-btn">Ver más</button>`;
+      container.appendChild(verMasDiv);
+
+      let index = 0;
+      const batch = 21;
+      function renderBatch() {
+        const slice = items.slice(index, index + batch);
+        slice.forEach(obj => container.insertBefore(createCard(obj.data, obj.isSerie, obj.link || null), verMasDiv));
+        index += batch;
+        if (index >= items.length) verMasDiv.style.display = 'none';
+      }
+
+      verMasDiv.querySelector('button').addEventListener('click', renderBatch);
+      renderBatch();
+    }
+
+    // ---------- Favoritos UI ----------
+    function buildFavoritos() {
+      const favDiv = document.getElementById('FAVORITOS');
+      if (!favDiv) return;
+      if (!favoritos || favoritos.length === 0) {
+        favDiv.innerHTML = "<p class='white-text center'>No tienes favoritos aún.</p>";
+        return;
+      }
+      renderWithPagination(favDiv, favoritos);
+    }
+
+    // ---------- Construir secciones (preservando orden manual) ----------
+    async function buildSections() {
+      const container = document.getElementById('sections');
+      container.innerHTML = '';
+
+      // crear secciones base
+      const todasDiv = document.createElement('div'); todasDiv.id = 'TODAS'; todasDiv.className = 'row padDrew';
+      const netflixDiv = document.createElement('div'); netflixDiv.id = 'NETFLIX'; netflixDiv.className = 'row padDrew';
+      const estrenosDiv = document.createElement('div'); estrenosDiv.id = 'ESTRENOS'; estrenosDiv.className = 'row padDrew';
+      const seriesDiv = document.createElement('div'); seriesDiv.id = 'SERIES'; seriesDiv.className = 'row padDrew';
+      const favDiv = document.createElement('div'); favDiv.id = 'FAVORITOS'; favDiv.className = 'row padDrew';
+
+      // reset globals
+      todasItems = [];
+      genresMap.clear();
+      netflixList = [];
+      netflixLoaded = false;
+
+      // Cargar películas manuales en el orden exacto
+      for (const obj of peliculasManual) {
+        const m = await getMovieData(obj.id);
+        if (m && m.id) {
+          const item = { data: m, isSerie: false, link: obj.link };
+          todasItems.push(item);
+          processGenres(item);
+        }
+      }
+
+      // Cargar series manuales en el orden exacto (se añaden después de las pelis tal como pediste)
+      for (const obj of seriesManual) {
+        const s = await getSerieData(obj.id);
+        if (s && s.id) {
+          const item = { data: s, isSerie: true, link: obj.link };
+          todasItems.push(item);
+          processGenres(item);
+        }
+      }
+
+      // Añadir secciones al DOM (las dejamos vacías por ahora)
+      container.appendChild(todasDiv);
+      container.appendChild(netflixDiv);
+      container.appendChild(estrenosDiv);
+      container.appendChild(seriesDiv);
+      container.appendChild(favDiv);
+
+      // Render inicial rápido (sin providers)
+      renderWithPagination(todasDiv, todasItems);
+
+      const seriesItems = todasItems.filter(it => it.isSerie);
+      const currentYear = new Date().getFullYear().toString();
+      const estrenosItems = todasItems.filter(it => !it.isSerie && ((it.data.release_date || '').startsWith(currentYear)));
+
+      renderWithPagination(seriesDiv, seriesItems);
+      renderWithPagination(estrenosDiv, estrenosItems);
+      buildFavoritos();
+
+      // Generar pestañas y secciones para géneros dinámicamente (respetando orden de inserción en cada género)
+      const genreTabs = document.getElementById('genreTabs');
+
+      // eliminar tabs dinámicos viejos si existen
+      Array.from(genreTabs.querySelectorAll('li.dynamic-genre')).forEach(n => n.remove());
+      // eliminar secciones GENRE-* viejas si existen
+      Array.from(container.querySelectorAll('[id^="GENRE-"]')).forEach(n => n.remove());
+
+      // Para cada género en el Map, crear tab y sección
+      genresMap.forEach((g, genreId) => {
+        const liTab = document.createElement('li');
+        liTab.className = 'tab dynamic-genre';
+        liTab.innerHTML = `<a href="#GENRE-${genreId}">${escapeHtml(g.name)}</a>`;
+        genreTabs.appendChild(liTab);
+
+        const divGenre = document.createElement('div');
+        divGenre.id = `GENRE-${genreId}`;
+        divGenre.className = 'row padDrew';
+        container.appendChild(divGenre);
+
+        // Render de los items del género (ya respetan el orden en que se añadieron a genresMap)
+        renderWithPagination(divGenre, g.items);
+      });
+
+      // Re-inicializar tabs (Materialize) para detectar las nuevas pestañas
+      try {
+        const tabsEls = document.querySelectorAll('.tabs');
+        M.Tabs.init(tabsEls);
+      } catch (e) { /* ignore */ }
+
+      // Función para cargar Netflix (solo cuando el usuario entra a la pestaña)
+      async function loadNetflix() {
+        if (netflixLoaded) return;
+        netflixLoaded = true;
+        netflixDiv.innerHTML = '<p class="small-note">Cargando disponibilidad en Netflix (esto puede tardar unos segundos)...</p>';
+        const moviesToCheck = todasItems.filter(it => !it.isSerie);
+        try {
+          const providerPromises = moviesToCheck.map(it => getMovieProviders(it.data.id));
+          const providerResults = await Promise.all(providerPromises);
+          netflixList = [];
+          providerResults.forEach((prov, idx) => {
+            const it = moviesToCheck[idx];
+            if (!prov || !prov.results) return;
+            const info = prov.results[PROVIDERS_COUNTRY] || prov.results['US'] || null;
+            if (!info) return;
+            const arr = (info.flatrate || []).concat(info.buy || []).concat(info.rent || []);
+            const tieneNetflix = arr.some(p => p.provider_name && p.provider_name.toLowerCase().includes('netflix'));
+            if (tieneNetflix) netflixList.push(it);
+          });
+          if (netflixList.length === 0) netflixDiv.innerHTML = '<p class="white-text center">No se encontraron títulos en Netflix dentro de la lista.</p>';
+          else renderWithPagination(netflixDiv, netflixList);
+        } catch (err) {
+          console.warn('Error cargando providers:', err);
+          netflixDiv.innerHTML = '<p class="white-text center">Error al consultar proveedores.</p>';
+        }
+      }
+
+      // Mostrar/ocultar secciones
+      function showSection(id) {
+        Array.from(container.children).forEach(ch => ch.style.display = (ch.id === id) ? '' : 'none');
+        // Marcar tab activo visual (remueve active de todos y pone en el actual)
+        document.querySelectorAll('#genreTabs a').forEach(a => a.classList.remove('active'));
+        const activeAnchor = document.querySelector('#genreTabs a[href="#' + id + '"]');
+        if (activeAnchor) activeAnchor.classList.add('active');
+
+        // acciones específicas
+        if (id === 'NETFLIX') loadNetflix();
+        if (id === 'FAVORITOS') buildFavoritos();
+        updateFavButtons();
+      }
+
+      // Asociar click a todas las pestañas (incluidas las dinámicas)
+      document.querySelectorAll('#genreTabs a').forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          const target = a.getAttribute('href').slice(1);
+          showSection(target);
+        });
+      });
+
+      // Mostrar TODAS por defecto
+      showSection('TODAS');
+
+      // Buscador: filtra la sección visible (incluye GENRE-*)
+      const inputBuscar = document.getElementById('buscar');
+      inputBuscar.addEventListener('input', () => {
+        const q = inputBuscar.value.trim().toLowerCase();
+        const visible = Array.from(container.children).find(ch => ch.style.display !== 'none');
+        if (!visible) return;
+
+        let baseList = [];
+        if (visible.id === 'TODAS') baseList = todasItems;
+        else if (visible.id === 'NETFLIX') baseList = netflixList;
+        else if (visible.id === 'ESTRENOS') baseList = estrenosItems;
+        else if (visible.id === 'SERIES') baseList = seriesItems;
+        else if (visible.id === 'FAVORITOS') baseList = favoritos;
+        else if (visible.id.startsWith('GENRE-')) {
+          const gid = Number(visible.id.split('-')[1]);
+          const g = genresMap.get(gid);
+          baseList = g ? g.items : [];
+        }
+
+        if (q === '') {
+          // re-render con paginación
+          if (visible.id === 'FAVORITOS') buildFavoritos();
+          else renderWithPagination(visible, baseList);
+        } else {
+          const matches = baseList.filter(it => {
+            const title = it.isSerie ? (it.data.name || '') : (it.data.title || '');
+            return title.toLowerCase().includes(q);
+          });
+          visible.innerHTML = '';
+          matches.forEach(it => visible.appendChild(createCard(it.data, it.isSerie, it.link || null)));
+        }
+      });
+
+    } // end buildSections
+
+    // DOM ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      // inicializar materialize componentes
+      const elems = document.querySelectorAll('.sidenav');
+      M.Sidenav.init(elems);
+      M.Tabs.init(document.querySelectorAll('.tabs'));
+
+      // construir secciones
+      await buildSections();
+
+      // esconder loader suave
+      const loader = document.querySelector('.loader');
+      loader.style.transition = 'opacity 0.6s ease';
+      loader.style.opacity = '0';
+      setTimeout(() => { loader.style.display = 'none'; }, 600);
+
+      // nav transparente al hacer scroll
+      const nav = document.querySelector('.transparent-nav');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 30) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+      });
+    });
+  </script>
+</body>
+</html>
