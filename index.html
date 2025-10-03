@@ -397,7 +397,7 @@
       container.appendChild(verMasDiv);
 
       let index = 0;
-      const batch = 30;
+      const batch = 46;
       function renderBatch() {
         const slice = items.slice(index, index + batch);
         slice.forEach(obj => container.insertBefore(createCard(obj.data, obj.isSerie, obj.link || null), verMasDiv));
