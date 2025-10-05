@@ -131,8 +131,10 @@ function renderEpisodes(season) {
 
 // Reproducir episodio en JWPlayer
 function loadEpisode(seasonNum, episodeNum, ep) {
-  const videoData = seriesData[serieId]?.[`T${seasonNum}`]?.[`E${episodeNum}`];
-  if (!videoData) {
+  const serie = seriesData[serieId];
+  const videoUrl = serie && serie[seasonNum] && serie[seasonNum][episodeNum];
+
+  if (!videoUrl) {
     alert('No hay enlace configurado para este episodio en series.json');
     return;
   }
@@ -141,12 +143,12 @@ function loadEpisode(seasonNum, episodeNum, ep) {
   playerContainer.scrollIntoView({ behavior: 'smooth' });
 
   jwplayer("myPlayer").setup({
-    file: videoData.url,
+    file: videoUrl,
     image: ep.still_path ? imageBase + ep.still_path : '',
     width: "100%",
     aspectratio: "16:9",
     autostart: false,
-    type: detectType(videoData.url),
+    type: detectType(videoUrl),
   });
 }
 
@@ -155,7 +157,7 @@ function detectType(url) {
   if (url.endsWith('.m3u8')) return 'hls';
   if (url.endsWith('.mpd')) return 'dash';
   if (url.endsWith('.webm')) return 'webm';
-  if (url.endsWith('.mkv')) return 'mp4'; // fuerza mkv como mp4
+  if (url.endsWith('.mkv')) return 'mp4';
   return 'mp4';
 }
 
