@@ -1,38 +1,78 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Serie - TMDb Info</title>
-
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jwplayer.com/libraries/SAHhwvZq.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Galería de Series</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <header>
-    <div class="header-content">
-      <img id="poster" class="poster" alt="Poster Serie">
-      <div class="info">
-        <h1 id="titulo"></h1>
-        <p id="sinopsis"></p>
-        <div id="rating"></div>
-      </div>
-    </div>
+  <header class="site-header">
+    <h1>Galería de Series</h1>
+    <p>Agrega IDs TMDb en el array <code>seriesIds</code> abajo.</p>
   </header>
 
-  <main>
-    <div id="player-container">
-      <div id="zonaaps-jwplayer"></div>
-    </div>
-
-    <div class="temporadas">
-      <h2>Temporadas</h2>
-      <select id="seasonSelect"></select>
-      <div id="episodios" class="episodios"></div>
-    </div>
+  <main class="gallery">
+    <div id="cards" class="cards"></div>
   </main>
 
-  <script src="js/app.js"></script>
+  <footer class="site-footer">Hecho para GitHub • TMDb + JWPlayer</footer>
+
+<script>
+// CONFIG — Pon aquí tu API KEY de TMDb
+const TMDB_API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
+
+// Lista de IDs TMDb (cambia / agrega los IDs que quieras mostrar)
+const seriesIds = [1399, 66732]; // ejemplo: Game of Thrones (1399)
+
+const imageBase = 'https://image.tmdb.org/t/p/w500';
+
+async function fetchSeries(id) {
+  const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=es-ES`);
+  if (!res.ok) throw new Error('TMDb fetch error');
+  return res.json();
+}
+
+function makeCard(series) {
+  const a = document.createElement('a');
+  a.href = `serie.html?id=${series.id}`;
+  a.className = 'card-link';
+
+  const card = document.createElement('article');
+  card.className = 'card';
+
+  const img = document.createElement('img');
+  img.className = 'poster';
+  img.alt = series.name;
+  img.loading = 'lazy';
+  img.src = series.poster_path ? imageBase + series.poster_path : '';
+
+  const title = document.createElement('h3');
+  title.textContent = series.name;
+
+  card.appendChild(img);
+  card.appendChild(title);
+  a.appendChild(card);
+  return a;
+}
+
+async function render() {
+  const container = document.getElementById('cards');
+  for (const id of seriesIds) {
+    try {
+      const s = await fetchSeries(id);
+      container.appendChild(makeCard(s));
+    } catch (e) {
+      console.error('Error cargando serie', id, e);
+      const err = document.createElement('div');
+      err.className = 'card error';
+      err.textContent = `ID ${id} - no encontrado`;
+      container.appendChild(err);
+    }
+  }
+}
+
+render();
+</script>
 </body>
 </html>
