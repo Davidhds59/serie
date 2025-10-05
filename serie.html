@@ -3,76 +3,277 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Galería de Series</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Ver Serie</title>
+  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
   <header class="site-header">
-    <h1>Galería de Series</h1>
-    <p>Agrega IDs TMDb en el array <code>seriesIds</code> abajo.</p>
+    <a href="index.html" class="back">← Volver</a>
+    <h1 id="serie-title">Serie</h1>
   </header>
+<br> <br> <br>
+  <main class="serie-container">
+    <!-- Info (póster + datos) - FIJO -->
+    <section id="serie-info" class="serie-info"></section>
 
-  <main class="gallery">
-    <div id="cards" class="cards"></div>
+    <!-- Reproductor - FIJO -->
+    <div id="player-wrapper" class="player-wrapper">
+      <div id="player-container" class="player-container">
+        <div id="myPlayer"></div>
+      </div>
+    </div>
+
+    <!-- Panel inferior -->
+    <div class="bottom-panel">
+      <div class="season-selector">
+        <label for="seasonSelect">Seleccionar temporada:</label>
+        <select id="seasonSelect"></select>
+      </div>
+
+      <section id="episodes" class="episodes scrollable-list"></section>
+    </div>
   </main>
 
-  <footer class="site-footer">Hecho para GitHub • TMDb + JWPlayer</footer>
+  <footer class="site-footer">Hecho con TMDb + JWPlayer</footer>
 
 <script>
-// CONFIG — Pon aquí tu API KEY de TMDb
 const TMDB_API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
-
-// Lista de IDs TMDb (cambia / agrega los IDs que quieras mostrar)
-const seriesIds = [1399, 66732]; // ejemplo: Game of Thrones (1399)
-
 const imageBase = 'https://image.tmdb.org/t/p/w500';
+const imageBackdrop = 'https://image.tmdb.org/t/p/original';
+const urlParams = new URLSearchParams(window.location.search);
+const serieId = urlParams.get('id');
+let seriesData = {};
 
-async function fetchSeries(id) {
-  const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=es-ES`);
-  if (!res.ok) throw new Error('TMDb fetch error');
-  return res.json();
-}
+fetch('series.json')
+  .then(r => r.json())
+  .then(data => { seriesData = data; });
 
-function makeCard(series) {
-  const a = document.createElement('a');
-  a.href = `serie.html?id=${series.id}`;
-  a.className = 'card-link';
-
-  const card = document.createElement('article');
-  card.className = 'card';
-
-  const img = document.createElement('img');
-  img.className = 'poster';
-  img.alt = series.name;
-  img.loading = 'lazy';
-  img.src = series.poster_path ? imageBase + series.poster_path : '';
-
-  const title = document.createElement('h3');
-  title.textContent = series.name;
-
-  card.appendChild(img);
-  card.appendChild(title);
-  a.appendChild(card);
-  return a;
-}
-
-async function render() {
-  const container = document.getElementById('cards');
-  for (const id of seriesIds) {
-    try {
-      const s = await fetchSeries(id);
-      container.appendChild(makeCard(s));
-    } catch (e) {
-      console.error('Error cargando serie', id, e);
-      const err = document.createElement('div');
-      err.className = 'card error';
-      err.textContent = `ID ${id} - no encontrado`;
-      container.appendChild(err);
-    }
+async function fetchSerieInfo() {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${serieId}?api_key=${TMDB_API_KEY}&language=es-ES`);
+    const serie = await res.json();
+    renderSerieInfo(serie);
+    loadSeasons(serie);
+  } catch (e) {
+    console.error('Error cargando serie:', e);
   }
 }
 
-render();
+function renderSerieInfo(serie) {
+  document.getElementById('serie-title').textContent = serie.name || 'Serie';
+  if (serie.backdrop_path) {
+    document.body.style.backgroundImage = `url(${imageBackdrop + serie.backdrop_path})`;
+  }
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundAttachment = "fixed";
+  document.body.style.backgroundRepeat = "no-repeat";
+
+  const container = document.getElementById('serie-info');
+  const rating = serie.vote_average ? Math.round(serie.vote_average * 10) : 0;
+
+  container.innerHTML = `
+    <div class="info-overlay">
+      <img src="${serie.poster_path ? imageBase + serie.poster_path : ''}" class="poster" alt="${serie.name || ''}">
+      <div class="details">
+        <h2>${serie.name || ''}</h2>
+        <div class="rating-wrapper">
+          <div class="rating-circle" style="--offset:${110 - (rating * 1.1)};">
+            <svg>
+              <circle class="bg" cx="20" cy="20" r="17"></circle>
+              <circle class="progress" cx="20" cy="20" r="17"></circle>
+            </svg>
+            <span>${rating}%</span>
+          </div>
+        </div>
+        <p class="tagline">${serie.tagline || ''}</p>
+        <p class="overview">${serie.overview || 'Sin descripción disponible.'}</p>
+        <p><strong>Primera emisión:</strong> ${serie.first_air_date || 'N/A'}</p>
+        <p><strong>Géneros:</strong> ${(serie.genres || []).map(g => g.name).join(', ')}</p>
+      </div>
+    </div>
+  `;
+}
+
+function loadSeasons(serie) {
+  const select = document.getElementById('seasonSelect');
+  select.innerHTML = '<option value="">-- Selecciona una temporada --</option>';
+  (serie.seasons || []).forEach(season => {
+    if (season.season_number >= 0) {
+      const opt = document.createElement('option');
+      opt.value = season.season_number;
+      opt.textContent = season.name || `Temporada ${season.season_number}`;
+      select.appendChild(opt);
+    }
+  });
+
+  select.addEventListener('change', () => {
+    const num = select.value;
+    if (num !== '') fetchSeasonEpisodes(num);
+  });
+
+  // Cargar automáticamente la primera temporada
+  if (serie.seasons && serie.seasons.length > 0) {
+    const firstSeason = serie.seasons[0].season_number;
+    select.value = firstSeason;
+    fetchSeasonEpisodes(firstSeason);
+  }
+}
+
+async function fetchSeasonEpisodes(seasonNumber) {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${serieId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}&language=es-ES`);
+    const season = await res.json();
+    renderEpisodes(season);
+
+    // Cargar automáticamente el primer episodio al abrir
+    if (season.episodes && season.episodes.length > 0) {
+      const firstEp = season.episodes[0];
+      loadEpisode(season.season_number, firstEp.episode_number, firstEp);
+    }
+  } catch (e) {
+    console.error('Error cargando temporada:', e);
+  }
+}
+
+function renderEpisodes(season) {
+  const episodesDiv = document.getElementById('episodes');
+  episodesDiv.innerHTML = '';
+
+  (season.episodes || []).forEach(ep => {
+    const epDiv = document.createElement('div');
+    epDiv.className = 'episode-card';
+    epDiv.innerHTML = `
+      <img src="${ep.still_path ? imageBase + ep.still_path : ''}" alt="${ep.name}">
+      <h4>${ep.episode_number}. ${ep.name}</h4>
+    `;
+    epDiv.addEventListener('click', () => loadEpisode(season.season_number, ep.episode_number, ep));
+    episodesDiv.appendChild(epDiv);
+  });
+}
+
+function loadEpisode(seasonNum, episodeNum, ep) {
+  const serie = seriesData[serieId];
+  const videoUrl = serie && serie[seasonNum] && serie[seasonNum][episodeNum];
+  if (!videoUrl) {
+    alert('No hay enlace configurado para este episodio en series.json');
+    return;
+  }
+
+  jwplayer("myPlayer").setup({
+    file: videoUrl,
+    image: ep.still_path ? imageBase + ep.still_path : '',
+    autostart: true,
+    width: "100%",
+    aspectratio: "16:9",
+    type: detectType(videoUrl),
+  });
+}
+
+function detectType(url) {
+  if (!url) return 'mp4';
+  if (url.endsWith('.m3u8')) return 'hls';
+  if (url.endsWith('.mpd')) return 'dash';
+  if (url.endsWith('.webm')) return 'webm';
+  if (url.endsWith('.mkv')) return 'mp4';
+  return 'mp4';
+}
+
+fetchSerieInfo();
 </script>
+
+<style>
+:root{
+  --header-h:70px;
+  --info-h:180px;
+  --player-h:auto;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#000;color:#fff;overflow:hidden;}
+body::before{
+  content:"";position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:0;
+}
+.site-header{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-h);display:flex;align-items:center;justify-content:center;
+  gap:1rem;padding:0 1rem;background:rgba(17,17,17,0.95);z-index:1200;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.site-header .back{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#fff;text-decoration:none;font-size:.7rem;}
+.site-header h1{margin:0;font-size:.7rem;}
+.serie-container{max-width:1100px;margin:0 auto;padding:20px;position:relative;z-index:1;}
+.serie-info{
+  position:fixed;top:calc(var(--header-h)+8px);left:50%;transform:translateX(-50%);
+  width:calc(100% - 40px);max-width:1100px;height:var(--info-h);z-index:1100;
+  background:rgba(0,0,0,0.55);border-radius:10px;padding:12px;display:flex;align-items:center;gap:16px;overflow:hidden;
+}
+.info-overlay{display:flex;align-items:center;gap:16px;width:100%}
+.poster{width:130px;border-radius:8px;flex:0 0 auto;box-shadow:0 6px 18px rgba(0,0,0,0.8)}
+.details{flex:1;min-width:0}
+.details {margin:0 0 6px 0;font-size:.5rem}
+.rating-wrapper{margin:4px 0;display:flex;align-items:center}
+.tagline{font-style:italic;color:#ccc;margin:6px 0}
+.overview{max-height:56px;overflow:hidden;font-size:0.3rem;color:#ddd;opacity:0.95}
+.player-wrapper{
+  position:fixed;
+  top:calc(var(--header-h) + var(--info-h) + 14px);
+  left:50%;transform:translateX(-50%);
+  width:min(100%,980px);
+  z-index:1090;
+  border-radius:10px;
+  background:rgba(0,0,0,0.6);
+  padding:6px;
+}
+.player-container{width:100%;border-radius:8px;overflow:hidden;background:#000;}
+.bottom-panel{
+  position:fixed;
+  bottom:36px;
+  left:50%;
+  transform:translateX(-50%);
+  width:calc(100% - 40px);
+  max-width:1100px;
+  background:rgba(0,0,0,0.45);
+  border-radius:10px;
+  padding:14px;
+  z-index:1080;
+}
+.season-selector{text-align:center;margin:8px 0}
+#seasonSelect{padding:.6em;border-radius:6px;border:none;font-size:1em}
+.scrollable-list{max-height:200px;overflow-y:auto;padding-right:6px;margin-top:8px;}
+.scrollable-list::-webkit-scrollbar{width:8px}
+.scrollable-list::-webkit-scrollbar-thumb{background:rgba(0,255,127,0.15);border-radius:6px}
+.episodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+.episode-card{background:#111;border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,background .15s}
+.episode-card:hover{transform:translateY(-4px)}
+.episode-card img{width:100%;display:block;height:110px;object-fit:cover}
+.episode-card h4{padding:.6em;font-size:.9em;text-align:center;margin:0}
+.site-footer{
+  position:fixed;left:0;right:0;bottom:0;height:36px;
+  display:flex;align-items:center;justify-content:center;background:rgba(17,17,17,0.95);
+  z-index:1200;font-size:0.4rem;border-top:1px solid rgba(255,255,255,0.03)
+}
+
+/* círculo de rating más pequeño */
+.rating-circle{position:relative;width:32px;height:32px}
+.rating-circle svg{position:absolute;top:0;left:0;width:32px;height:32px;transform:rotate(-90deg)}
+.rating-circle circle{fill:none;stroke-width:4;stroke-linecap:round}
+.rating-circle circle.bg{stroke:rgba(255,255,255,0.14)}
+.rating-circle circle.progress{stroke:#00ff7f;stroke-dasharray:110;stroke-dashoffset:110;animation:fillProgress 1.3s ease forwards}
+@keyframes fillProgress{to{stroke-dashoffset:var(--offset,0)}}
+.rating-circle span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;font-size:0.7rem}
+
+/* Responsive */
+@media(max-width:1000px){
+  .poster{width:120px}
+  .episode-card img{height:100px}
+}
+@media(max-width:700px){
+  .poster{width:110px}
+  .player-wrapper{width:calc(100% - 28px);}
+  .scrollable-list{max-height:160px}
+  .episode-card img{height:90px}
+  .details h1{font-size:.3rem}
+}
+</style>
 </body>
 </html>
