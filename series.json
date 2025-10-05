@@ -1,16 +1,23 @@
 {
   "66732": {
     "1": {
-      "1": "https://dl.dropbox.com/s/qnnirswyiybs14k/CapMarvel.mp4",
-      "2": "https://dl.dropbox.com/s/qnnirswyiybs14k/CapMarvel.mp4"
+      "1": "https://tu-servidor.com/series/strangerthings/s1e1.mp4",
+      "2": "https://tu-servidor.com/series/strangerthings/s1e2.mp4",
+      "3": "https://tu-servidor.com/series/strangerthings/s1e3.mp4"
     },
     "2": {
-      "1": "https://example.com/1399/s02e01.mp4"
+      "1": "https://tu-servidor.com/series/strangerthings/s2e1.mp4",
+      "2": "https://tu-servidor.com/series/strangerthings/s2e2.mp4"
     }
   },
-  "66732": {
+
+  "67890": {
     "1": {
-      "1": "https://dl.dropbox.com/s/qnnirswyiybs14k/CapMarvel.mp4"
+      "1": "https://tu-servidor.com/series/theboys/s1e1.m3u8",
+      "2": "https://tu-servidor.com/series/theboys/s1e2.m3u8"
+    },
+    "2": {
+      "1": "https://tu-servidor.com/series/theboys/s2e1.m3u8"
     }
   }
 }
