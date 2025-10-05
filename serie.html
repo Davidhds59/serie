@@ -163,7 +163,8 @@ function loadEpisode(seasonNum, episodeNum, ep) {
   jwplayer("myPlayer").setup({
     file: videoUrl,
     image: ep.still_path ? imageBase + ep.still_path : '',
-    autostart: true,
+    autostart: false,
+    mute: false,
     width: "100%",
     aspectratio: "16:9",
     type: detectType(videoUrl),
