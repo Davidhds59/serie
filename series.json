@@ -1,23 +1,27 @@
 {
-  "66732": {
+  "286801": {
     "1": {
-      "1": "https://tu-servidor.com/series/strangerthings/s1e1.mp4",
-      "2": "https://tu-servidor.com/series/strangerthings/s1e2.mp4",
-      "3": "https://tu-servidor.com/series/strangerthings/s1e3.mp4"
-    },
-    "2": {
-      "1": "https://tu-servidor.com/series/strangerthings/s2e1.mp4",
-      "2": "https://tu-servidor.com/series/strangerthings/s2e2.mp4"
+      "1": "https://1a-1791.com/video/fwe2/5a/s8/2/O/F/X/n/OFXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1661789184-1661821890",
+      "2": "https://1a-1791.com/video/fwe2/76/s8/2/M/J/X/n/MJXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1835636224-1835672415",
+      "3": "https://1a-1791.com/video/fwe2/81/s8/2/q/K/X/n/qKXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1813344256-1813380130",
+      "4": "https://1a-1791.com/video/fwe2/ec/s8/2/0/K/X/n/0KXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1768163840-1768198694",
+      "5": "https://1a-1791.com/video/fwe2/02/s8/2/Y/E/X/n/YEXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1479735808-1479765021",
+      "6": "https://1a-1791.com/video/fwe2/f2/s8/2/I/E/X/n/IEXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1397836800-1397864379",
+      "7": "https://1a-1791.com/video/fwe2/16/s8/2/A/L/X/n/ALXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1797576704-1797612155",
+      "8": "https://1a-1791.com/video/fwe2/b4/s8/2/C/M/X/n/CMXnz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=2021052928-2021092915"
     }
   },
 
-  "67890": {
+  "157239": {
     "1": {
-      "1": "https://tu-servidor.com/series/theboys/s1e1.m3u8",
-      "2": "https://tu-servidor.com/series/theboys/s1e2.m3u8"
-    },
-    "2": {
-      "1": "https://tu-servidor.com/series/theboys/s2e1.m3u8"
+      "1": "https://1a-1791.com/video/fww1/22/s8/2/S/7/R/-/S7R-y.aaa.mp4",
+      "2": "https://hugh.cdn.rumble.cloud/video/fww1/f0/s8/2/Q/p/S/-/QpS-y.aaa.mp4",
+      "3": "https://1a-1791.com/video/fww1/7d/s8/2/K/w/0/a/Kw0az.aaa.mp4",
+      "4": "https://1a-1791.com/video/fww1/9c/s8/2/-/D/7/i/-D7iz.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=944200704-944236219",
+      "5": "https://1a-1791.com/video/fww1/b7/s8/2/U/M/7/i/UM7iz.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1029208576-1029247359",
+      "6": "https://1a-1791.com/video/fww1/65/s8/2/y/M/7/i/yM7iz.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=917630976-917665472",
+      "7": "https://1a-1791.com/video/fww1/f2/s8/2/m/K/7/i/mK7iz.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=714775552-714802404",
+      "8": "https://hugh.cdn.rumble.cloud/video/fww1/c8/s8/2/0/e/T/k/0eTkz.aaa.mp4"
     }
   }
 }
