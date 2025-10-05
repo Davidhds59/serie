@@ -156,9 +156,9 @@ function loadEpisode(seasonNum, episodeNum, ep) {
   const serie = seriesData[serieId];
   const videoUrl = serie && serie[seasonNum] && serie[seasonNum][episodeNum];
   if (!videoUrl) {
-    alert('No hay enlace configurado para este episodio en series.json');
-    return;
-  }
+  console.warn("No hay enlace configurado para este episodio en series.json");
+  return;
+}
 
   jwplayer("myPlayer").setup({
     file: videoUrl,
