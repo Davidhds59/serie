@@ -1,29 +1,40 @@
-// Configura tu clave TMDb
-const API_KEY = 'cc5b94165972aa509a349161d13d4fc9'; 
-const SERIE_ID = '1396'; // Ejemplo: Breaking Bad
+const API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
+
+// Leer el parámetro ID de la URL
+const urlParams = new URLSearchParams(window.location.search);
+const SERIE_ID = urlParams.get('id');
+if (!SERIE_ID) {
+  document.body.innerHTML = "<h2 style='text-align:center;'>❌ No se encontró ID de serie.</h2>";
+  throw new Error("Falta ID TMDb");
+}
 
 const API_URL = `https://api.themoviedb.org/3/tv/${SERIE_ID}?api_key=${API_KEY}&language=es-MX`;
-const EPISODES_URL = (season) => `https://api.themoviedb.org/3/tv/${SERIE_ID}/season/${season}?api_key=${API_KEY}&language=es-MX`;
+const EPISODES_URL = (s) => `https://api.themoviedb.org/3/tv/${SERIE_ID}/season/${s}?api_key=${API_KEY}&language=es-MX`;
 
+// ✅ Inicializar JWPlayer con soporte ampliado
 const player = jwplayer("zonaaps-jwplayer").setup({
   width: "100%",
   aspectratio: "16:9",
   stretching: "fill",
   controls: true,
   autostart: false,
-  skin: { name: "netflix" }
+  primary: "html5",
+  playbackRateControls: true,
+  cast: {},
+  skin: { name: "netflix" },
+  abouttext: "Reproductor TMDb",
+  aboutlink: "https://www.jwplayer.com"
 });
 
-// Cargar datos de la serie
+// Cargar información de la serie
 fetch(API_URL)
   .then(res => res.json())
   .then(data => {
+    document.title = data.name;
     document.getElementById('titulo').textContent = data.name;
     document.getElementById('sinopsis').textContent = data.overview;
     document.getElementById('poster').src = `https://image.tmdb.org/t/p/w300${data.poster_path}`;
     document.querySelector('header').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${data.backdrop_path})`;
-    document.querySelector('header').style.backgroundSize = 'cover';
-    document.querySelector('header').style.backgroundPosition = 'center';
 
     const select = document.getElementById('seasonSelect');
     data.seasons.forEach(season => {
@@ -63,21 +74,45 @@ document.getElementById('seasonSelect').addEventListener('change', (e) => {
   loadEpisodes(e.target.value);
 });
 
-// Cargar video desde enlaces.json
+// ✅ Cargar enlace desde carpeta /enlaces/ con detección de formato
 function loadEpisodeVideo(season, episode, backdrop) {
-  fetch('enlaces.json')
+  fetch(`enlaces/${SERIE_ID}.json`)
     .then(res => res.json())
     .then(videos => {
-      const link = videos[`s${season}e${episode}`];
-      if (link) {
-        player.load([{ file: link }]);
-        player.play();
-
-        document.querySelector('#player-container').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${backdrop})`;
-        document.querySelector('#player-container').style.backgroundSize = 'cover';
-        document.querySelector('#player-container').style.backgroundPosition = 'center';
-      } else {
-        alert('Enlace no disponible.');
+      const key = `s${season}e${episode}`;
+      const link = videos[key];
+      if (!link) {
+        alert('❌ Episodio no disponible.');
+        return;
       }
-    });
+
+      // Detectar tipo de archivo
+      let type = "mp4";
+      if (link.endsWith(".m3u8")) type = "hls";
+      else if (link.endsWith(".webm")) type = "webm";
+      else if (link.endsWith(".mpd")) type = "dash";
+
+      // Configurar JWPlayer con compatibilidad universal
+      player.setup({
+        file: link,
+        type: type,
+        width: "100%",
+        aspectratio: "16:9",
+        stretching: "fill",
+        autostart: true,
+        primary: "html5",
+        playbackRateControls: true,
+        skin: { name: "netflix" },
+        cast: {},
+        tracks: [],
+        abouttext: "Reproductor TMDb",
+        aboutlink: "https://www.jwplayer.com"
+      });
+
+      // Cambiar backdrop del reproductor
+      document.querySelector('#player-container').style.backgroundImage =
+        `url(https://image.tmdb.org/t/p/original${backdrop})`;
+      document.querySelector('#player-container').style.backgroundSize = 'cover';
+    })
+    .catch(() => alert('⚠️ No se encontró el archivo de enlaces.'));
 }
