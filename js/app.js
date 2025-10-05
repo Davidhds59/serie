@@ -1,7 +1,6 @@
-/* app.js - REEMPLAZA tu archivo actual por este (mantén TU_API_KEY) */
 const API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
 
-// Leer ID de la URL
+// Obtener ID de la serie desde la URL
 const urlParams = new URLSearchParams(window.location.search);
 const SERIE_ID = urlParams.get('id');
 if (!SERIE_ID) {
@@ -12,7 +11,7 @@ if (!SERIE_ID) {
 const API_URL = `https://api.themoviedb.org/3/tv/${SERIE_ID}?api_key=${API_KEY}&language=es-MX`;
 const EPISODES_URL = (s) => `https://api.themoviedb.org/3/tv/${SERIE_ID}/season/${s}?api_key=${API_KEY}&language=es-MX`;
 
-/* Inicializa JWPlayer (solo una vez) */
+// Inicializar JWPlayer
 const player = jwplayer("zonaaps-jwplayer").setup({
   width: "100%",
   aspectratio: "16:9",
@@ -22,40 +21,51 @@ const player = jwplayer("zonaaps-jwplayer").setup({
   primary: "html5",
   playbackRateControls: true,
   skin: { name: "netflix" },
+  cast: {},
   abouttext: "Reproductor TMDb",
   aboutlink: "https://www.jwplayer.com"
 });
 
-/* Mensajes dentro del contenedor del player */
-function showPlayerMessage(txt, isError = true) {
-  let container = document.querySelector('#player-container');
-  if (!container) return;
-  let el = document.getElementById('player-msg');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'player-msg';
-    el.style.cssText = "position:absolute;left:10px;right:10px;top:10px;padding:10px;border-radius:8px;font-weight:600;text-align:center;z-index:50;";
-    container.style.position = 'relative';
-    container.appendChild(el);
+// Función para mostrar mensajes en el reproductor
+function showPlayerMessage(message, isError = true) {
+  const playerContainer = document.getElementById('player-container');
+  if (!playerContainer) return;
+
+  let messageElement = document.getElementById('player-msg');
+  if (!messageElement) {
+    messageElement = document.createElement('div');
+    messageElement.id = 'player-msg';
+    messageElement.style.position = 'absolute';
+    messageElement.style.top = '10px';
+    messageElement.style.left = '10px';
+    messageElement.style.right = '10px';
+    messageElement.style.padding = '10px';
+    messageElement.style.borderRadius = '8px';
+    messageElement.style.fontWeight = '600';
+    messageElement.style.textAlign = 'center';
+    messageElement.style.zIndex = '50';
+    playerContainer.style.position = 'relative';
+    playerContainer.appendChild(messageElement);
   }
-  el.style.background = isError ? 'rgba(255,50,50,0.12)' : 'rgba(0,0,0,0.35)';
-  el.style.color = isError ? '#ffdddd' : '#fff';
-  el.textContent = txt;
+
+  messageElement.style.backgroundColor = isError ? 'rgba(255,50,50,0.12)' : 'rgba(0,0,0,0.35)';
+  messageElement.style.color = isError ? '#ffdddd' : '#fff';
+  messageElement.textContent = message;
 }
 
-/* Limpiar mensaje cuando todo bien */
+// Limpiar mensaje cuando se reproduce
 player.on('play', () => {
   const el = document.getElementById('player-msg');
   if (el) el.style.display = 'none';
 });
 
-/* Escuchar errores de JWPlayer */
+// Capturar errores de JWPlayer
 player.on('error', (err) => {
   console.error('JWPLAYER ERROR:', err);
   showPlayerMessage('Error de reproducción. Revisa la consola (F12) para más detalles.', true);
 });
 
-/* Cargar info TMDb */
+// Cargar información de la serie
 fetch(API_URL)
   .then(res => res.json())
   .then(data => {
@@ -86,7 +96,7 @@ fetch(API_URL)
     showPlayerMessage('No se pudo cargar la info de TMDb.', true);
   });
 
-/* Cargar episodios */
+// Cargar episodios de una temporada
 function loadEpisodes(seasonNum) {
   fetch(EPISODES_URL(seasonNum))
     .then(res => res.json())
@@ -114,24 +124,22 @@ document.getElementById('seasonSelect').addEventListener('change', (e) => {
   loadEpisodes(e.target.value);
 });
 
-/* Detectar tipo a partir de la URL */
+// Detecta tipo de archivo según extensión
 function detectType(url) {
   const path = url.split('?')[0].toLowerCase();
   if (path.endsWith('.m3u8')) return 'hls';
   if (path.endsWith('.mpd')) return 'dash';
   if (path.endsWith('.webm')) return 'webm';
   if (path.endsWith('.mp4') || path.endsWith('.m4v')) return 'mp4';
-  return ''; // desconocido
+  return ''; // formato no soportado
 }
 
-/* CARGA robusta del episodio (usa player.load en vez de setup repetido) */
+// Cargar episodio en JWPlayer
 async function loadEpisodeVideo(season, episode, backdrop) {
   try {
     showPlayerMessage('Cargando episodio...', false);
     const resp = await fetch(`enlaces/${SERIE_ID}.json`);
-    if (!resp.ok) {
-      throw new Error(`No se encontró enlaces/${SERIE_ID}.json (status ${resp.status})`);
-    }
+    if (!resp.ok) throw new Error(`No se encontró enlaces/${SERIE_ID}.json (status ${resp.status})`);
     const videos = await resp.json();
     const key = `s${season}e${episode}`;
     const link = videos[key];
@@ -141,26 +149,26 @@ async function loadEpisodeVideo(season, episode, backdrop) {
     }
 
     const type = detectType(link);
+    if (!type) {
+      showPlayerMessage('⚠️ Formato no soportado por el navegador: ' + link.split('.').pop(), true);
+      return;
+    }
+
     console.log('Cargando capítulo:', key, '→', link, 'tipo_detectado=', type);
 
-    // Intenta cargar con player.load (playlist simple)
     player.load([{
       file: link,
-      type: type || undefined,
+      type: type,
       image: backdrop ? `https://image.tmdb.org/t/p/w780${backdrop}` : undefined,
       title: `S${season}E${episode}`
     }]);
+    player.play(true);
 
-    // Espera corto y reproduce
-    setTimeout(() => {
-      player.play(true);
-      document.querySelector('#player-container').style.backgroundImage =
-        backdrop ? `url(https://image.tmdb.org/t/p/original${backdrop})` : 'none';
-      document.querySelector('#player-container').style.backgroundSize = 'cover';
-      const el = document.getElementById('player-msg');
-      if (el) el.style.display = 'none';
-    }, 300);
-
+    document.querySelector('#player-container').style.backgroundImage =
+      backdrop ? `url(https://image.tmdb.org/t/p/original${backdrop})` : 'none';
+    document.querySelector('#player-container').style.backgroundSize = 'cover';
+    const el = document.getElementById('player-msg');
+    if (el) el.style.display = 'none';
   } catch (err) {
     console.error('Error en loadEpisodeVideo:', err);
     showPlayerMessage(`Error cargando el enlace: ${err.message}`, true);
