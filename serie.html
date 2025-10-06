@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ver Serie</title>
+  <link rel="stylesheet" href="https://zonaaps-player.xyz/style.css">
   <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
@@ -168,7 +169,7 @@ function loadEpisode(seasonNum, episodeNum, ep) {
     aspectratio: "16:9",
     type: detectType(videoUrl),
     skin: {
-        url: "https://zonaaps-player.xyz/style.css"
+        name: "netflix"
     }
   });
 }
@@ -257,7 +258,7 @@ body::before{
 .site-footer{
   position:fixed;left:0;right:0;bottom:0;height:36px;
   display:flex;align-items:center;justify-content:center;background:rgba(17,17,17,0.95);
-  z-index:1200;font-size:0.4rem;border-top:1px solid rgba(255,255,255,0.03)
+  z-index:1200;font-size:0.6rem;border-top:1px solid rgba(255,255,255,0.03)
 }
 
 /* círculo de rating más pequeño */
@@ -267,7 +268,7 @@ body::before{
 .rating-circle circle.bg{stroke:rgba(255,255,255,0.14)}
 .rating-circle circle.progress{stroke:#00ff7f;stroke-dasharray:80;stroke-dashoffset:80;animation:fillProgress 1.3s ease forwards}
 @keyframes fillProgress{to{stroke-dashoffset:var(--offset,0)}}
-.rating-circle span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;font-size:0.2rem}
+.rating-circle span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;font-size:0.6rem}
 
 /* Responsive */
 @media(max-width:1000px){
