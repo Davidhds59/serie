@@ -34,7 +34,7 @@
     </div>
   </main>
 
-  <footer class="site-footer">Hecho con TMDb + JWPlayer</footer>
+ 
 
 <script>
 const TMDB_API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
@@ -80,8 +80,8 @@ function renderSerieInfo(serie) {
         <div class="rating-wrapper">
           <div class="rating-circle" style="--offset:${110 - (rating * 1.1)};">
             <svg>
-              <circle class="bg" cx="20" cy="20" r="17"></circle>
-              <circle class="progress" cx="20" cy="20" r="17"></circle>
+              <circle class="bg" cx="14" cy="14" r="0"></circle>
+              <circle class="progress" cx="14" cy="14" r="12"></circle>
             </svg>
             <span>${rating}%</span>
           </div>
@@ -158,7 +158,7 @@ function loadEpisode(seasonNum, episodeNum, ep) {
   if (!videoUrl) {
   console.warn("No hay enlace configurado para este episodio en series.json");
   return;
-}
+  }
 
   jwplayer("myPlayer").setup({
     file: videoUrl,
@@ -167,6 +167,9 @@ function loadEpisode(seasonNum, episodeNum, ep) {
     width: "100%",
     aspectratio: "16:9",
     type: detectType(videoUrl),
+    skin: {
+        url: "https://zonaaps-player.xyz/style.css"
+    }
   });
 }
 
@@ -183,6 +186,10 @@ fetchSerieInfo();
 </script>
 
 <style>
+    
+    
+ 
+
 :root{
   --header-h:70px;
   --info-h:180px;
@@ -254,13 +261,13 @@ body::before{
 }
 
 /* círculo de rating más pequeño */
-.rating-circle{position:relative;width:32px;height:32px}
-.rating-circle svg{position:absolute;top:0;left:0;width:32px;height:32px;transform:rotate(-90deg)}
-.rating-circle circle{fill:none;stroke-width:4;stroke-linecap:round}
+.rating-circle{position:relative;width:30px;height:30px}
+.rating-circle svg{position:absolute;top:0;left:0;width:30px;height:30px;transform:rotate(-90deg)}
+.rating-circle circle{fill:none;stroke-width:3;stroke-linecap:round}
 .rating-circle circle.bg{stroke:rgba(255,255,255,0.14)}
-.rating-circle circle.progress{stroke:#00ff7f;stroke-dasharray:110;stroke-dashoffset:110;animation:fillProgress 1.3s ease forwards}
+.rating-circle circle.progress{stroke:#00ff7f;stroke-dasharray:80;stroke-dashoffset:80;animation:fillProgress 1.3s ease forwards}
 @keyframes fillProgress{to{stroke-dashoffset:var(--offset,0)}}
-.rating-circle span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;font-size:0.7rem}
+.rating-circle span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;font-size:0.2rem}
 
 /* Responsive */
 @media(max-width:1000px){
@@ -274,6 +281,9 @@ body::before{
   .episode-card img{height:90px}
   .details h1{font-size:.3rem}
 }
+ .site-header {
+    display: none;
+  }
 </style>
 </body>
 </html>
