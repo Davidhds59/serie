@@ -21,14 +21,6 @@
     <div id="player-wrapper" class="player-wrapper">
       <div id="player-container" class="player-container">
         <div id="myPlayer"></div>
-        <!-- Overlay de reanudación -->
-        <div id="resume-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); color:white; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999;">
-          <p style="font-size:1.2em; margin-bottom:10px;">¿Deseas continuar desde donde lo dejaste?</p>
-          <div>
-            <button id="resume-yes" style="margin-right:10px; padding:8px 14px; border:none; border-radius:5px; background:#00ff7f; color:#000; cursor:pointer;">Sí, continuar</button>
-            <button id="resume-no" style="padding:8px 14px; border:none; border-radius:5px; background:#ff4b4b; color:#fff; cursor:pointer;">No, comenzar desde inicio</button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -43,6 +35,8 @@
     </div>
   </main>
 
+ 
+
 <script>
 const TMDB_API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
 const imageBase = 'https://image.tmdb.org/t/p/w500';
@@ -50,7 +44,6 @@ const imageBackdrop = 'https://image.tmdb.org/t/p/original';
 const urlParams = new URLSearchParams(window.location.search);
 const serieId = urlParams.get('id');
 let seriesData = {};
-let currentVideoKey = null;
 
 fetch('series.json')
   .then(r => r.json())
@@ -164,11 +157,9 @@ function loadEpisode(seasonNum, episodeNum, ep) {
   const serie = seriesData[serieId];
   const videoUrl = serie && serie[seasonNum] && serie[seasonNum][episodeNum];
   if (!videoUrl) {
-    console.warn("No hay enlace configurado para este episodio en series.json");
-    return;
+  console.warn("No hay enlace configurado para este episodio en series.json");
+  return;
   }
-
-  currentVideoKey = `${serieId}-S${seasonNum}-E${episodeNum}`;
 
   jwplayer("myPlayer").setup({
     file: videoUrl,
@@ -177,43 +168,10 @@ function loadEpisode(seasonNum, episodeNum, ep) {
     width: "100%",
     aspectratio: "16:9",
     type: detectType(videoUrl),
-    skin: { name: "netflix" }
-  });
-
-  const savedTime = localStorage.getItem(currentVideoKey);
-  if (savedTime && parseFloat(savedTime) > 10) {
-    showResumeOverlay(savedTime);
-  }
-
-  jwplayer("myPlayer").on('time', function(event) {
-    if (currentVideoKey) {
-      localStorage.setItem(currentVideoKey, event.position);
+    skin: {
+        name: "netflix"
     }
   });
-
-  jwplayer("myPlayer").on('complete', function() {
-    if (currentVideoKey) {
-      localStorage.removeItem(currentVideoKey);
-    }
-  });
-}
-
-function showResumeOverlay(savedTime) {
-  const overlay = document.getElementById('resume-overlay');
-  overlay.style.display = 'flex';
-  const player = jwplayer("myPlayer");
-
-  document.getElementById('resume-yes').onclick = function() {
-    overlay.style.display = 'none';
-    player.seek(parseFloat(savedTime));
-    player.play();
-  };
-
-  document.getElementById('resume-no').onclick = function() {
-    overlay.style.display = 'none';
-    player.seek(0);
-    player.play();
-  };
 }
 
 function detectType(url) {
@@ -229,6 +187,10 @@ fetchSerieInfo();
 </script>
 
 <style>
+    
+    
+ 
+
 :root{
   --header-h:70px;
   --info-h:180px;
@@ -270,7 +232,7 @@ body::before{
   background:rgba(0,0,0,0.6);
   padding:6px;
 }
-.player-container{width:100%;border-radius:8px;overflow:hidden;background:#000;position:relative;}
+.player-container{width:100%;border-radius:8px;overflow:hidden;background:#000;}
 .bottom-panel{
   position:fixed;
   bottom:36px;
@@ -320,9 +282,9 @@ body::before{
   .episode-card img{height:90px}
   .details h1{font-size:.3rem}
 }
-.site-header {
-  display: none;
-}
+ .site-header {
+    display: none;
+  }
 </style>
 </body>
 </html>
