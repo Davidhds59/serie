@@ -3,337 +3,333 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Series</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #000;
-      color: #fff;
-    }
-
-    .site-header {
-      text-align: center;
-      padding: 1rem;
-      background-color: #000;
-    }
-
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      background-color: #000;
-      padding: 0.5rem 0;
-    }
-
-    .tab {
-      cursor: pointer;
-      padding: 0.5rem 1rem;
-      border-bottom: 3px solid transparent;
-      transition: border-color 0.3s;
-      font-weight: bold;
-    }
-
-    .tab.active {
-      border-color: red;
-      color: red;
-    }
-
-    .search-container {
-      text-align: center;
-      margin: 1rem 0;
-    }
-
-    .search-container input {
-      padding: 0.5rem;
-      width: 80%;
-      max-width: 400px; 
-      border-radius: 5px;
-      border: none;
-      font-size: 1rem;
-      background-color: #111;
-    }
-
-    /* ✅ Forzamos 3 columnas */
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      padding: 1rem;
-      max-width: 960px;
-      margin: 0 auto;
-      justify-items: center;
-    }
-
-    .card-link {
-      text-decoration: none;
-      color: inherit;
-      width: 100%;
-      max-width: 200px;
-      position: relative;
-    }
-
-    .card {
-      position: relative;
-      width: 100%;
-      border-radius: 10px;
-      overflow: hidden;
-      background-color: #000;
-      transition: box-shadow 0.3s ease, filter 0.3s ease;
-    }
-
-    /* Sin agrandar en hover */
-    .card:hover {
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-      filter: brightness(1.1);
-      transform: none;
-    }
-
-    .poster {
-      width: 100px;
-      height: 150px;
-      object-fit: cover;
-      border-bottom: 1px solid #333;
-    }
-
-    .card h1 {
-      font-size: .7rem;
-      padding: 0.5rem;
-      text-align: center;
-      margin: 0;
-      color: #fff;
-      height: 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .rating {
-      position: absolute;
-      top: 9px;
-      left: 8px;
-      background: rgba(0,0,0,0.7);
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .star {
-      color: gold;
-    }
-    
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      height: 100%; width: 100%;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
-        url('https://pbs.twimg.com/media/Gp972OIWMAAeIHy?format=jpg&name=4096x4096') no-repeat center center/cover;
-      z-index: -1;
-    }
-
-    /* ❤️ Botón de favoritos */
-    .fav-btn {
-      position: absolute;
-      top: 9px;
-      right: 12px;
-      font-size: 1.2rem;
-      background: rgba(0,0,0,0.7);
-      border: none;
-      border-radius: 50%;
-      color: #fff;
-      cursor: pointer;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s ease, color 0.2s ease;
-    }
-
-    .fav-btn:hover {
-      transform: scale(1.2);
-    }
-
-    .fav-active {
-      color: red;
-    }
-
-    .error {
-      background-color: #a00;
-      padding: 1rem;
-      border-radius: 10px;
-      text-align: center;
-      width: 100%;
-    }
-
-    .site-footer {
-      text-align: center;
-      padding: 1rem;
-      background-color: #111;
-    }
-  </style>
+  <title>Ver Serie</title>
+  <link rel="stylesheet" href="https://zonaaps-player.xyz/style.css">  
+  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
   <header class="site-header">
-    <h1>Series</h1>
+    <a href="index.html" class="back">← Volver</a>
+    <h1 id="serie-title">Serie</h1>
   </header>
+<br> <br> <br>
+  <main class="serie-container">
+    <!-- Info (póster + datos) - FIJO -->
+    <section id="serie-info" class="serie-info"></section>
 
-  <div class="tabs">
-    <div class="tab active" id="tab-todas">Todas</div>
-    <div class="tab" id="tab-favoritos">Favoritos</div>
-  </div>
+    <!-- Reproductor - FIJO -->
+    <div id="player-wrapper" class="player-wrapper">
+      <div id="player-container" class="player-container" style="position: relative;">
+        <div id="myPlayer"></div>
 
-  <div class="search-container">
-    <input type="text" id="inputBuscar" placeholder="Buscar serie...">
-  </div>
+        <!-- Overlay continuar -->
+        <div id="continue-overlay" style="
+          display:none;
+          position:absolute;
+          inset:0;
+          background:rgba(0,0,0,0.75);
+          color:white;
+          z-index:2000;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          flex-direction:column;
+          text-align:center;
+        ">
+          <p style="font-size:1rem;margin-bottom:10px;">¿Deseas continuar viendo desde donde lo dejaste?</p>
+          <div style="display:flex;gap:12px;">
+            <button id="continue-yes" style="padding:8px 16px;background:#00ff7f;border:none;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;">Sí, continuar</button>
+            <button id="continue-no" style="padding:8px 16px;background:#fff;border:none;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;">No, empezar desde inicio</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <main class="gallery" id="cards"></main>
+    <!-- Panel inferior -->
+    <div class="bottom-panel">
+      <div class="season-selector">
+        <label for="seasonSelect">Seleccionar temporada:</label>
+        <select id="seasonSelect"></select>
+      </div>
 
-  
+      <section id="episodes" class="episodes scrollable-list"></section>
+    </div>
+  </main>
+
+ 
 
 <script>
 const TMDB_API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
-const seriesIds =
-[286801, 157239, 113988 ]; // Ejemplo
 const imageBase = 'https://image.tmdb.org/t/p/w500';
+const imageBackdrop = 'https://image.tmdb.org/t/p/original';
+const urlParams = new URLSearchParams(window.location.search);
+const serieId = urlParams.get('id');
+let seriesData = {};
+let currentEpisodeKey = null; // clave única para guardar progreso
+let playerInstance = null;
 
-let allSeries = [];
-let currentTab = 'Todas';
+fetch('series.json')
+  .then(r => r.json())
+  .then(data => { seriesData = data; });
 
-function getFavorites() {
-  return JSON.parse(localStorage.getItem('favoritosSeries') || '[]');
-}
-
-function saveFavorites(list) {
-  localStorage.setItem('favoritosSeries', JSON.stringify(list));
-}
-
-function toggleFavorite(id, btn) {
-  let favs = getFavorites();
-  if (favs.includes(id)) {
-    favs = favs.filter(f => f !== id);
-    btn.classList.remove('fav-active');
-  } else {
-    favs.push(id);
-    btn.classList.add('fav-active');
+async function fetchSerieInfo() {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${serieId}?api_key=${TMDB_API_KEY}&language=es-ES`);
+    const serie = await res.json();
+    renderSerieInfo(serie);
+    loadSeasons(serie);
+  } catch (e) {
+    console.error('Error cargando serie:', e);
   }
-  saveFavorites(favs);
 }
 
-async function fetchSeries(id) {
-  const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=es-ES`);
-  if (!res.ok) throw new Error('TMDb fetch error');
-  return res.json();
+function renderSerieInfo(serie) {
+  document.getElementById('serie-title').textContent = serie.name || 'Serie';
+  if (serie.backdrop_path) {
+    document.body.style.backgroundImage = `url(${imageBackdrop + serie.backdrop_path})`;
+  }
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundAttachment = "fixed";
+  document.body.style.backgroundRepeat = "no-repeat";
+
+  const container = document.getElementById('serie-info');
+  const rating = serie.vote_average ? Math.round(serie.vote_average * 10) : 0;
+
+  container.innerHTML = `
+    <div class="info-overlay">
+      <img src="${serie.poster_path ? imageBase + serie.poster_path : ''}" class="poster" alt="${serie.name || ''}">
+      <div class="details">
+        <h2>${serie.name || ''}</h2>
+        <div class="rating-wrapper">
+          <div class="rating-circle" style="--offset:${110 - (rating * 1.1)};">
+            <svg>
+              <circle class="bg" cx="14" cy="14" r="0"></circle>
+              <circle class="progress" cx="14" cy="14" r="12"></circle>
+            </svg>
+            <span>${rating}%</span>
+          </div>
+        </div>
+        <p class="tagline">${serie.tagline || ''}</p>
+        <p class="overview">${serie.overview || 'Sin descripción disponible.'}</p>
+        <p><strong>Primera emisión:</strong> ${serie.first_air_date || 'N/A'}</p>
+        <p><strong>Géneros:</strong> ${(serie.genres || []).map(g => g.name).join(', ')}</p>
+      </div>
+    </div>
+  `;
 }
 
-function makeCard(series) {
-  const favs = getFavorites();
-  const a = document.createElement('a');
-  a.href = `serie.html?id=${series.id}`;
-  a.className = 'card-link';
-
-  const card = document.createElement('article');
-  card.className = 'card';
-
-  const rating = document.createElement('div');
-  rating.className = 'rating';
-  const star = document.createElement('span');
-  star.className = 'star';
-  star.textContent = '★';
-  const score = document.createElement('span');
-  score.textContent = series.vote_average ? series.vote_average.toFixed(1) : 'N/A';
-  rating.appendChild(star);
-  rating.appendChild(score);
-  card.appendChild(rating);
-
-  const favBtn = document.createElement('button');
-  favBtn.className = 'fav-btn';
-  favBtn.innerHTML = '❤';
-  if (favs.includes(series.id)) favBtn.classList.add('fav-active');
-  favBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleFavorite(series.id, favBtn);
-  });
-  card.appendChild(favBtn);
-
-  const img = document.createElement('img');
-  img.className = 'poster';
-  img.alt = series.name;
-  img.loading = 'lazy';
-  img.src = series.poster_path ? imageBase + series.poster_path : '';
-  card.appendChild(img);
-
-  const title = document.createElement('h3');
-  title.textContent = series.name;
-  card.appendChild(title);
-
-  a.appendChild(card);
-  return a;
-}
-
-async function render() {
-  const container = document.getElementById('cards');
-  container.innerHTML = '';
-  for (const id of seriesIds) {
-    try {
-      const s = await fetchSeries(id);
-      allSeries.push(s);
-      container.appendChild(makeCard(s));
-    } catch (e) {
-      console.error('Error cargando serie', id, e);
-      const err = document.createElement('div');
-      err.className = 'card error';
-      err.textContent = `ID ${id} - no encontrado`;
-      container.appendChild(err);
+function loadSeasons(serie) {
+  const select = document.getElementById('seasonSelect');
+  select.innerHTML = '<option value="">-- Selecciona una temporada --</option>';
+  (serie.seasons || []).forEach(season => {
+    if (season.season_number >= 0) {
+      const opt = document.createElement('option');
+      opt.value = season.season_number;
+      opt.textContent = season.name || `Temporada ${season.season_number}`;
+      select.appendChild(opt);
     }
-  }
-}
-
-function showSeries(list) {
-  const container = document.getElementById('cards');
-  container.innerHTML = '';
-  list.forEach(s => container.appendChild(makeCard(s)));
-}
-
-function showTab(tab) {
-  currentTab = tab;
-  document.getElementById('tab-todas').classList.toggle('active', tab === 'Todas');
-  document.getElementById('tab-favoritos').classList.toggle('active', tab === 'Favoritos');
-
-  if (tab === 'Favoritos') {
-    const favs = getFavorites();
-    const favSeries = allSeries.filter(s => favs.includes(s.id));
-    showSeries(favSeries);
-  } else {
-    showSeries(allSeries);
-  }
-}
-
-render().then(() => {
-  const inputBuscar = document.getElementById("inputBuscar");
-  inputBuscar.addEventListener("input", () => {
-    const q = inputBuscar.value.trim().toLowerCase();
-    let list = [];
-    if (currentTab === 'Todas') list = allSeries;
-    else {
-      const favs = getFavorites();
-      list = allSeries.filter(m => favs.includes(m.id));
-    }
-    const filtered = q === "" ? list : list.filter(m => m.name.toLowerCase().includes(q));
-    showSeries(filtered);
   });
 
-  document.getElementById('tab-todas').addEventListener('click', () => showTab('Todas'));
-  document.getElementById('tab-favoritos').addEventListener('click', () => showTab('Favoritos'));
-});
+  select.addEventListener('change', () => {
+    const num = select.value;
+    if (num !== '') fetchSeasonEpisodes(num);
+  });
+
+  // Cargar automáticamente la primera temporada
+  if (serie.seasons && serie.seasons.length > 0) {
+    const firstSeason = serie.seasons[0].season_number;
+    select.value = firstSeason;
+    fetchSeasonEpisodes(firstSeason);
+  }
+}
+
+async function fetchSeasonEpisodes(seasonNumber) {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${serieId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}&language=es-ES`);
+    const season = await res.json();
+    renderEpisodes(season);
+
+    // Cargar automáticamente el primer episodio al abrir
+    if (season.episodes && season.episodes.length > 0) {
+      const firstEp = season.episodes[0];
+      loadEpisode(season.season_number, firstEp.episode_number, firstEp);
+    }
+  } catch (e) {
+    console.error('Error cargando temporada:', e);
+  }
+}
+
+function renderEpisodes(season) {
+  const episodesDiv = document.getElementById('episodes');
+  episodesDiv.innerHTML = '';
+
+  (season.episodes || []).forEach(ep => {
+    const epDiv = document.createElement('div');
+    epDiv.className = 'episode-card';
+    epDiv.innerHTML = `
+      <img src="${ep.still_path ? imageBase + ep.still_path : ''}" alt="${ep.name}">
+      <h4>${ep.episode_number}. ${ep.name}</h4>
+    `;
+    epDiv.addEventListener('click', () => loadEpisode(season.season_number, ep.episode_number, ep));
+    episodesDiv.appendChild(epDiv);
+  });
+}
+
+function loadEpisode(seasonNum, episodeNum, ep) {
+  const serie = seriesData[serieId];
+  const videoUrl = serie && serie[seasonNum] && serie[seasonNum][episodeNum];
+  if (!videoUrl) {
+    console.warn("No hay enlace configurado para este episodio en series.json");
+    return;
+  }
+
+  currentEpisodeKey = `${serieId}-S${seasonNum}-E${episodeNum}`;
+
+  playerInstance = jwplayer("myPlayer").setup({
+    file: videoUrl,
+    image: ep.still_path ? imageBase + ep.still_path : '',
+    autostart: false,
+    width: "100%",
+    aspectratio: "16:9",
+    type: detectType(videoUrl),
+    skin: { name: "netflix" }
+  });
+
+  // Mostrar overlay si hay progreso guardado
+  const savedTime = localStorage.getItem(currentEpisodeKey);
+  const overlay = document.getElementById('continue-overlay');
+  if (savedTime && savedTime > 10) {
+    overlay.style.display = "flex";
+    document.getElementById('continue-yes').onclick = () => {
+      overlay.style.display = "none";
+      playerInstance.seek(parseFloat(savedTime));
+      playerInstance.play();
+    };
+    document.getElementById('continue-no').onclick = () => {
+      overlay.style.display = "none";
+      playerInstance.play();
+    };
+  }
+
+  // Guardar progreso cada 5 segundos
+  playerInstance.on('time', e => {
+    localStorage.setItem(currentEpisodeKey, e.position);
+  });
+
+  // Si termina, eliminar progreso
+  playerInstance.on('complete', () => {
+    localStorage.removeItem(currentEpisodeKey);
+  });
+}
+
+function detectType(url) {
+  if (!url) return 'mp4';
+  if (url.endsWith('.m3u8')) return 'hls';
+  if (url.endsWith('.mpd')) return 'dash';
+  if (url.endsWith('.webm')) return 'webm';
+  if (url.endsWith('.mkv')) return 'mp4';
+  return 'mp4';
+}
+
+fetchSerieInfo();
 </script>
+
+<style>
+:root{
+  --header-h:70px;
+  --info-h:180px;
+  --player-h:auto;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#000;color:#fff;overflow:hidden;}
+body::before{
+  content:"";position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:0;
+}
+.site-header{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-h);display:flex;align-items:center;justify-content:center;
+  gap:1rem;padding:0 1rem;background:rgba(17,17,17,0.95);z-index:1200;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.site-header .back{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#fff;text-decoration:none;font-size:.7rem;}
+.site-header h1{margin:0;font-size:.7rem;}
+.serie-container{max-width:1100px;margin:0 auto;padding:20px;position:relative;z-index:1;}
+.serie-info{
+  position:fixed;top:calc(var(--header-h)+8px);left:50%;transform:translateX(-50%);
+  width:calc(100% - 40px);max-width:1100px;height:var(--info-h);z-index:1100;
+  background:rgba(0,0,0,0.55);border-radius:10px;padding:12px;display:flex;align-items:center;gap:16px;overflow:hidden;
+}
+.info-overlay{display:flex;align-items:center;gap:16px;width:100%}
+.poster{width:130px;border-radius:8px;flex:0 0 auto;box-shadow:0 6px 18px rgba(0,0,0,0.8)}
+.details{flex:1;min-width:0}
+.details h1{margin:0 0 6px 0;font-size:.6rem}
+.rating-wrapper{margin:4px 0;display:flex;align-items:center}
+.tagline{font-style:italic;color:#ccc;margin:6px 0}
+.overview{max-height:56px;overflow:hidden;font-size:0.3rem;color:#ddd;opacity:0.95}
+.player-wrapper{
+  position:fixed;
+  top:calc(var(--header-h) + var(--info-h) + 14px);
+  left:50%;transform:translateX(-50%);
+  width:min(100%,980px);
+  z-index:1090;
+  border-radius:10px;
+  background:rgba(0,0,0,0.6);
+  padding:6px;
+}
+.player-container{width:100%;border-radius:8px;overflow:hidden;background:#000;}
+.bottom-panel{
+  position:fixed;
+  bottom:36px;
+  left:50%;
+  transform:translateX(-50%);
+  width:calc(100% - 40px);
+  max-width:1100px;
+  background:rgba(0,0,0,0.45);
+  border-radius:10px;
+  padding:14px;
+  z-index:1080;
+}
+.season-selector{text-align:center;margin:8px 0}
+#seasonSelect{padding:.6em;border-radius:6px;border:none;font-size:1em}
+.scrollable-list{max-height:200px;overflow-y:auto;padding-right:6px;margin-top:8px;}
+.scrollable-list::-webkit-scrollbar{width:8px}
+.scrollable-list::-webkit-scrollbar-thumb{background:rgba(0,255,127,0.15);border-radius:6px}
+.episodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+.episode-card{background:#111;border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,background .15s}
+.episode-card:hover{transform:translateY(-4px)}
+.episode-card img{width:100%;display:block;height:110px;object-fit:cover}
+.episode-card h4{padding:.6em;font-size:.9em;text-align:center;margin:0}
+.site-footer{
+  position:fixed;left:0;right:0;bottom:0;height:36px;
+  display:flex;align-items:center;justify-content:center;background:rgba(17,17,17,0.95);
+  z-index:1200;font-size:0.6rem;border-top:1px solid rgba(255,255,255,0.03)
+}
+
+/* círculo de rating más pequeño */
+.rating-circle{position:relative;width:30px;height:30px}
+.rating-circle svg{position:absolute;top:0;left:0;width:30px;height:30px;transform:rotate(-90deg)}
+.rating-circle circle{fill:none;stroke-width:3;stroke-linecap:round}
+.rating-circle circle.bg{stroke:rgba(255,255,255,0.14)}
+.rating-circle circle.progress{stroke:#00ff7f;stroke-dasharray:80;stroke-dashoffset:80;animation:fillProgress 1.3s ease forwards}
+@keyframes fillProgress{to{stroke-dashoffset:var(--offset,0)}}
+.rating-circle span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;font-size:0.6rem}
+
+/* Responsive */
+@media(max-width:1000px){
+  .poster{width:120px}
+  .episode-card img{height:100px}
+}
+@media(max-width:700px){
+  .poster{width:110px}
+  .player-wrapper{width:calc(100% - 28px);}
+  .scrollable-list{max-height:160px}
+  .episode-card img{height:90px}
+  .details h1{font-size:.3rem}
+}
+ .site-header {
+    display: none;
+  }
+</style>
 </body>
 </html>
