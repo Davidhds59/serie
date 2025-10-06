@@ -22,7 +22,7 @@
       <div id="player-container" class="player-container" style="position: relative;">
         <div id="myPlayer"></div>
 
-        <!-- Overlay continuar -->
+        <!-- Overlay continuar / resume -->
         <div id="continue-overlay" style="
           display:none;
           position:absolute;
@@ -35,8 +35,9 @@
           justify-content:center;
           flex-direction:column;
           text-align:center;
+          padding:12px;
         ">
-          <p style="font-size:1rem;margin-bottom:10px;">¿Deseas continuar viendo desde donde lo dejaste?</p>
+          <p id="continue-text" style="font-size:1rem;margin-bottom:10px;">¿Deseas continuar viendo desde donde lo dejaste?</p>
           <div style="display:flex;gap:12px;">
             <button id="continue-yes" style="padding:8px 16px;background:#00ff7f;border:none;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;">Sí, continuar</button>
             <button id="continue-no" style="padding:8px 16px;background:#fff;border:none;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;">No, empezar desde inicio</button>
@@ -65,13 +66,25 @@ const imageBackdrop = 'https://image.tmdb.org/t/p/original';
 const urlParams = new URLSearchParams(window.location.search);
 const serieId = urlParams.get('id');
 let seriesData = {};
-let currentEpisodeKey = null; // clave única para guardar progreso
+let currentEpisodeKey = null; // clave única para guardar progreso (serieId-S{n}-E{m})
 let playerInstance = null;
+let lastSavedPosition = 0; // para fallback en unload
 
+// Carga local (series.json) si existe
 fetch('series.json')
   .then(r => r.json())
-  .then(data => { seriesData = data; });
+  .then(data => { seriesData = data; })
+  .catch(()=>{ /* no fatal si no hay series.json */ });
 
+/* UTIL: formatea segundos a mm:ss */
+function formatTime(sec){
+  sec = Math.floor(Number(sec) || 0);
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+/* Buscar info de la serie en TMDb */
 async function fetchSerieInfo() {
   try {
     const res = await fetch(`https://api.themoviedb.org/3/tv/${serieId}?api_key=${TMDB_API_KEY}&language=es-ES`);
@@ -119,6 +132,8 @@ function renderSerieInfo(serie) {
   `;
 }
 
+/* Carga las temporadas en el select. Si existe un 'last watched' para esta serie,
+   muestra overlay preguntando si desea continuar donde lo dejó. */
 function loadSeasons(serie) {
   const select = document.getElementById('seasonSelect');
   select.innerHTML = '<option value="">-- Selecciona una temporada --</option>';
@@ -136,21 +151,65 @@ function loadSeasons(serie) {
     if (num !== '') fetchSeasonEpisodes(num);
   });
 
-  // Cargar automáticamente la primera temporada
-  if (serie.seasons && serie.seasons.length > 0) {
-    const firstSeason = serie.seasons[0].season_number;
+  // Determinar primera temporada disponible
+  const firstSeason = (serie.seasons && serie.seasons.length > 0) ? serie.seasons[0].season_number : null;
+
+  // Revisar si hay progreso guardado para esta serie
+  try {
+    const lastRaw = localStorage.getItem(`${serieId}-last`);
+    if (lastRaw) {
+      const lastObj = JSON.parse(lastRaw);
+      if (lastObj && lastObj.season != null && lastObj.episode != null && Number(lastObj.time) > 5) {
+        // mostrar overlay global de "continuar última vez"
+        const overlay = document.getElementById('continue-overlay');
+        const text = document.getElementById('continue-text');
+        text.textContent = `¿Deseas continuar la última vez desde Temporada ${lastObj.season} Episodio ${lastObj.episode} (${formatTime(lastObj.time)})?`;
+        overlay.style.display = 'flex';
+        document.getElementById('continue-yes').onclick = () => {
+          overlay.style.display = 'none';
+          // cargar la temporada y episodio guardado
+          fetchSeasonEpisodes(lastObj.season, lastObj.episode, Number(lastObj.time));
+        };
+        document.getElementById('continue-no').onclick = () => {
+          overlay.style.display = 'none';
+          // cargar la primera temporada por defecto
+          if (firstSeason !== null) {
+            select.value = firstSeason;
+            fetchSeasonEpisodes(firstSeason);
+          }
+        };
+        return; // no auto-cargar la primera temporada hasta que el usuario elija
+      }
+    }
+  } catch(e){
+    console.warn('Error leyendo last watched:', e);
+  }
+
+  // Si no hay progreso guardado, cargar automáticamente la primera temporada
+  if (firstSeason !== null) {
     select.value = firstSeason;
     fetchSeasonEpisodes(firstSeason);
   }
 }
 
-async function fetchSeasonEpisodes(seasonNumber) {
+/* fetchSeasonEpisodes: acepta opcionales targetEpisode (para cargar episodio específico)
+   y startAt (segundos) para arrancar desde un tiempo dado.
+*/
+async function fetchSeasonEpisodes(seasonNumber, targetEpisodeNumber = null, startAt = 0) {
   try {
     const res = await fetch(`https://api.themoviedb.org/3/tv/${serieId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}&language=es-ES`);
     const season = await res.json();
     renderEpisodes(season);
 
-    // Cargar automáticamente el primer episodio al abrir
+    // Si se pidió un episodio concreto, cargarlo; si no, cargar el primer episodio
+    if (targetEpisodeNumber != null) {
+      const targetEp = (season.episodes || []).find(e => Number(e.episode_number) === Number(targetEpisodeNumber));
+      if (targetEp) {
+        loadEpisode(season.season_number, targetEp.episode_number, targetEp, startAt);
+        return;
+      }
+    }
+
     if (season.episodes && season.episodes.length > 0) {
       const firstEp = season.episodes[0];
       loadEpisode(season.season_number, firstEp.episode_number, firstEp);
@@ -176,15 +235,34 @@ function renderEpisodes(season) {
   });
 }
 
-function loadEpisode(seasonNum, episodeNum, ep) {
+/* loadEpisode: ahora acepta startAt (segundos) opcional para reanudar.
+   También guarda progreso (throttled cada 5s), guarda 'last watched' y maneja overlay
+   si existe progreso específico para ese episodio.
+*/
+function loadEpisode(seasonNum, episodeNum, ep, startAt = 0) {
   const serie = seriesData[serieId];
   const videoUrl = serie && serie[seasonNum] && serie[seasonNum][episodeNum];
   if (!videoUrl) {
     console.warn("No hay enlace configurado para este episodio en series.json");
+    // Aún así, podemos inicializar jwplayer con un archivo vacío para mantener UI si se desea,
+    // pero por ahora solo salimos para no romper.
     return;
   }
 
   currentEpisodeKey = `${serieId}-S${seasonNum}-E${episodeNum}`;
+
+  // Si ya hay un player existente, remove listeners by recreating element (safer)
+  // (Esto evita que múltiples instancias interfieran)
+  try {
+    // eliminar instancia previa si existe
+    if (playerInstance && typeof playerInstance.remove === 'function') {
+      playerInstance.remove();
+    }
+  } catch(e){ /* ignorar */ }
+
+  // Aseguramos que el contenedor esté limpio
+  const playerEl = document.getElementById('myPlayer');
+  playerEl.innerHTML = '';
 
   playerInstance = jwplayer("myPlayer").setup({
     file: videoUrl,
@@ -196,33 +274,125 @@ function loadEpisode(seasonNum, episodeNum, ep) {
     skin: { name: "netflix" }
   });
 
-  // Mostrar overlay si hay progreso guardado
-  const savedTime = localStorage.getItem(currentEpisodeKey);
-  const overlay = document.getElementById('continue-overlay');
-  if (savedTime && savedTime > 10) {
-    overlay.style.display = "flex";
-    document.getElementById('continue-yes').onclick = () => {
-      overlay.style.display = "none";
-      playerInstance.seek(parseFloat(savedTime));
-      playerInstance.play();
-    };
-    document.getElementById('continue-no').onclick = () => {
-      overlay.style.display = "none";
-      playerInstance.play();
-    };
+  // Si se solicita iniciar desde un tiempo, esperar a 'ready' y 'playback' para hacer seek
+  if (startAt && Number(startAt) > 0) {
+    playerInstance.on('ready', () => {
+      // algunos players requieren un pequeño delay antes del seek en ciertos sources
+      setTimeout(() => {
+        try { playerInstance.seek(Number(startAt)); } catch(e){}
+      }, 250);
+    });
+    // arrancar reproducción tras el seek cuando el usuario haya pedido "continuar":
+    playerInstance.on('play', function(){/* no-op */});
   }
 
-  // Guardar progreso cada 5 segundos
+  // Si hay progreso guardado para este episodio, preguntar si desea continuar (umbral 5s)
+  try {
+    const saved = localStorage.getItem(currentEpisodeKey);
+    const savedTime = saved ? Number(saved) : 0;
+    const overlay = document.getElementById('continue-overlay');
+    const text = document.getElementById('continue-text');
+
+    if (savedTime && savedTime > 5 && (!startAt || Number(startAt) === 0)) {
+      // mostrar overlay específico para este episodio
+      text.textContent = `¿Deseas continuar este episodio desde ${formatTime(savedTime)}?`;
+      overlay.style.display = 'flex';
+
+      document.getElementById('continue-yes').onclick = () => {
+        overlay.style.display = 'none';
+        // seek y play cuando esté listo
+        playerInstance.on('ready', () => {
+          setTimeout(()=> {
+            try { playerInstance.seek(savedTime); } catch(e){}
+            try { playerInstance.play(); } catch(e){}
+          }, 250);
+        });
+      };
+
+      document.getElementById('continue-no').onclick = () => {
+        overlay.style.display = 'none';
+        // Empezar desde 0
+        playerInstance.on('ready', () => {
+          try { playerInstance.seek(0); } catch(e){}
+          try { playerInstance.play(); } catch(e){}
+        });
+      };
+    }
+  } catch(e){
+    console.warn('Error comprobando progreso episodio:', e);
+  }
+
+  // Guardar progreso con throttle (cada >=5s)
+  let lastSavedAt = 0;
   playerInstance.on('time', e => {
-    localStorage.setItem(currentEpisodeKey, e.position);
+    const pos = Number(e.position || 0);
+    if (!isFinite(pos)) return;
+    // guardar cada 5 segundos
+    if (pos - lastSavedAt >= 5) {
+      try {
+        localStorage.setItem(currentEpisodeKey, String(pos));
+        // además actualizar "last watched" global de la serie
+        localStorage.setItem(`${serieId}-last`, JSON.stringify({ season: seasonNum, episode: episodeNum, time: pos }));
+        lastSavedAt = pos;
+        lastSavedPosition = pos;
+      } catch(err) {
+        console.warn('No se pudo guardar progreso:', err);
+      }
+    }
   });
 
-  // Si termina, eliminar progreso
+  // También guardar en pausas y cambios de estado por si acaso
+  playerInstance.on('pause', () => {
+    saveCurrentProgress();
+  });
+
+  // Al terminar, eliminar progreso de este episodio (opcional comportamiento)
   playerInstance.on('complete', () => {
-    localStorage.removeItem(currentEpisodeKey);
+    try {
+      localStorage.removeItem(currentEpisodeKey);
+      localStorage.removeItem(`${serieId}-last`);
+    } catch(e){}
   });
 }
 
+/* Guardado de emergencia: intenta obtener posición actual del player y guardarla */
+function saveCurrentProgress(){
+  try {
+    if (!currentEpisodeKey) return;
+    let pos = lastSavedPosition;
+    if (playerInstance) {
+      // preferimos getPosition() si existe
+      if (typeof playerInstance.getPosition === 'function') {
+        try {
+          const p = playerInstance.getPosition();
+          if (isFinite(p)) pos = p;
+        } catch(e) { /* fallback a lastSavedPosition */ }
+      }
+    }
+    if (pos && isFinite(pos)) {
+      localStorage.setItem(currentEpisodeKey, String(pos));
+      // actualizar last watched global
+      // parse currentEpisodeKey para extraer season y episode
+      try {
+        const m = currentEpisodeKey.match(/-S(\d+)-E(\d+)$/);
+        if (m) {
+          const season = Number(m[1]), episode = Number(m[2]);
+          localStorage.setItem(`${serieId}-last`, JSON.stringify({ season, episode, time: pos }));
+        }
+      } catch(e){}
+    }
+  } catch(e){
+    console.warn('Error en saveCurrentProgress:', e);
+  }
+}
+
+// Guardar al salir / ocultar pestaña
+window.addEventListener('beforeunload', saveCurrentProgress);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveCurrentProgress();
+});
+
+/* detecta tipo por extensión */
 function detectType(url) {
   if (!url) return 'mp4';
   if (url.endsWith('.m3u8')) return 'hls';
@@ -232,10 +402,15 @@ function detectType(url) {
   return 'mp4';
 }
 
+/* Iniciar */
 fetchSerieInfo();
 </script>
 
 <style>
+    
+    
+ 
+
 :root{
   --header-h:70px;
   --info-h:180px;
