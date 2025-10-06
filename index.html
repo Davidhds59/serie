@@ -3,28 +3,229 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title> Series </title>
+  <title>Series</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+
+    .site-header {
+      text-align: center;
+      padding: 1rem;
+      background-color: #000;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      background-color: #000;
+      padding: 0.5rem 0;
+    }
+
+    .tab {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.3s;
+      font-weight: bold;
+    }
+
+    .tab.active {
+      border-color: red;
+      color: red;
+    }
+
+    .search-container {
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    .search-container input {
+      padding: 0.5rem;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1rem;
+      background-color: #111;
+    }
+
+    /* ✅ Forzamos 3 columnas */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 960px;
+      margin: 0 auto;
+      justify-items: center;
+    }
+
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+      width: 100%;
+      max-width: 200px;
+      position: relative;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #000;
+      transition: box-shadow 0.3s ease, filter 0.3s ease;
+    }
+
+    /* Sin agrandar en hover */
+    .card:hover {
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      filter: brightness(1.1);
+      transform: none;
+    }
+
+    .poster {
+      width: 100px;
+      height: 150px;
+      object-fit: cover;
+      border-bottom: 1px solid #333;
+    }
+
+    .card h1 {
+      font-size: .7rem;
+      padding: 0.5rem;
+      text-align: center;
+      margin: 0;
+      color: #fff;
+      height: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rating {
+      position: absolute;
+      top: 9px;
+      left: 8px;
+      background: rgba(0,0,0,0.7);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .star {
+      color: gold;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      height: 100%; width: 100%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
+        url('https://pbs.twimg.com/media/Gp972OIWMAAeIHy?format=jpg&name=4096x4096') no-repeat center center/cover;
+      z-index: -1;
+    }
+
+    /* ❤️ Botón de favoritos */
+    .fav-btn {
+      position: absolute;
+      top: 9px;
+      right: 12px;
+      font-size: 1.2rem;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .fav-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .fav-active {
+      color: red;
+    }
+
+    .error {
+      background-color: #a00;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .site-footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #111;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
-    <h1> Series</h1>
-    </header>
+    <h1>Series</h1>
+  </header>
 
-  <main class="gallery">
-    <div id="cards" class="cards"></div>
-  </main>
+  <div class="tabs">
+    <div class="tab active" id="tab-todas">Todas</div>
+    <div class="tab" id="tab-favoritos">Favoritos</div>
+  </div>
 
-  <footer class="site-footer">Hecho con ❤️</footer>
+  <div class="search-container">
+    <input type="text" id="inputBuscar" placeholder="Buscar serie...">
+  </div>
+
+  <main class="gallery" id="cards"></main>
+
+  
 
 <script>
-// CONFIG — Pon aquí tu API KEY de TMDb
 const TMDB_API_KEY = 'cc5b94165972aa509a349161d13d4fc9';
-
-// Lista de IDs TMDb (cambia / agrega los IDs que quieras mostrar)
-const seriesIds = [286801,157239,113988]; // ejemplo: Game of Thrones (1399)
-
+const seriesIds =
+[286801, 157239, 113988 ]; // Ejemplo
 const imageBase = 'https://image.tmdb.org/t/p/w500';
+
+let allSeries = [];
+let currentTab = 'Todas';
+
+function getFavorites() {
+  return JSON.parse(localStorage.getItem('favoritosSeries') || '[]');
+}
+
+function saveFavorites(list) {
+  localStorage.setItem('favoritosSeries', JSON.stringify(list));
+}
+
+function toggleFavorite(id, btn) {
+  let favs = getFavorites();
+  if (favs.includes(id)) {
+    favs = favs.filter(f => f !== id);
+    btn.classList.remove('fav-active');
+  } else {
+    favs.push(id);
+    btn.classList.add('fav-active');
+  }
+  saveFavorites(favs);
+}
 
 async function fetchSeries(id) {
   const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=es-ES`);
@@ -33,6 +234,7 @@ async function fetchSeries(id) {
 }
 
 function makeCard(series) {
+  const favs = getFavorites();
   const a = document.createElement('a');
   a.href = `serie.html?id=${series.id}`;
   a.className = 'card-link';
@@ -40,26 +242,50 @@ function makeCard(series) {
   const card = document.createElement('article');
   card.className = 'card';
 
+  const rating = document.createElement('div');
+  rating.className = 'rating';
+  const star = document.createElement('span');
+  star.className = 'star';
+  star.textContent = '★';
+  const score = document.createElement('span');
+  score.textContent = series.vote_average ? series.vote_average.toFixed(1) : 'N/A';
+  rating.appendChild(star);
+  rating.appendChild(score);
+  card.appendChild(rating);
+
+  const favBtn = document.createElement('button');
+  favBtn.className = 'fav-btn';
+  favBtn.innerHTML = '❤';
+  if (favs.includes(series.id)) favBtn.classList.add('fav-active');
+  favBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(series.id, favBtn);
+  });
+  card.appendChild(favBtn);
+
   const img = document.createElement('img');
   img.className = 'poster';
   img.alt = series.name;
   img.loading = 'lazy';
   img.src = series.poster_path ? imageBase + series.poster_path : '';
+  card.appendChild(img);
 
   const title = document.createElement('h3');
   title.textContent = series.name;
-
-  card.appendChild(img);
   card.appendChild(title);
+
   a.appendChild(card);
   return a;
 }
 
 async function render() {
   const container = document.getElementById('cards');
+  container.innerHTML = '';
   for (const id of seriesIds) {
     try {
       const s = await fetchSeries(id);
+      allSeries.push(s);
       container.appendChild(makeCard(s));
     } catch (e) {
       console.error('Error cargando serie', id, e);
@@ -71,7 +297,43 @@ async function render() {
   }
 }
 
-render();
+function showSeries(list) {
+  const container = document.getElementById('cards');
+  container.innerHTML = '';
+  list.forEach(s => container.appendChild(makeCard(s)));
+}
+
+function showTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-todas').classList.toggle('active', tab === 'Todas');
+  document.getElementById('tab-favoritos').classList.toggle('active', tab === 'Favoritos');
+
+  if (tab === 'Favoritos') {
+    const favs = getFavorites();
+    const favSeries = allSeries.filter(s => favs.includes(s.id));
+    showSeries(favSeries);
+  } else {
+    showSeries(allSeries);
+  }
+}
+
+render().then(() => {
+  const inputBuscar = document.getElementById("inputBuscar");
+  inputBuscar.addEventListener("input", () => {
+    const q = inputBuscar.value.trim().toLowerCase();
+    let list = [];
+    if (currentTab === 'Todas') list = allSeries;
+    else {
+      const favs = getFavorites();
+      list = allSeries.filter(m => favs.includes(m.id));
+    }
+    const filtered = q === "" ? list : list.filter(m => m.name.toLowerCase().includes(q));
+    showSeries(filtered);
+  });
+
+  document.getElementById('tab-todas').addEventListener('click', () => showTab('Todas'));
+  document.getElementById('tab-favoritos').addEventListener('click', () => showTab('Favoritos'));
+});
 </script>
 </body>
 </html>
