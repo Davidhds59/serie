@@ -1,4 +1,40 @@
 {
+"194766": {
+    "1": {
+      "1": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/8/7/M/5/87M5r.aaa.mp4",
+      "2": "https://1a-1791.com/video/fw/s8/2/y/G/O/5/yGO5r.aaa.mp4",
+      "3": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/J/d/P/5/JdP5r.aaa.mp4",
+      "4": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/V/T/P/5/VTP5r.aaa.mp4",
+      "5": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/Z/O/Q/5/ZOQ5r.aaa.mp4",
+      "6": "https://1a-1791.com/video/fw/s8/2/F/C/R/5/FCR5r.aaa.mp4",
+      "7": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/M/_/S/5/M_S5r.aaa.mp4"  
+      
+    },
+    "2": {
+      "1": "https://1a-1791.com/video/fw/s8/2/Q/C/T/5/QCT5r.aaa.mp4",
+      "2": "https://1a-1791.com/video/fw/s8/2/S/L/T/5/SLT5r.aaa.mp4",
+      "3": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/y/W/T/5/yWT5r.aaa.mp4",
+      "4": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/F/i/U/5/FiU5r.aaa.mp4",
+      "5": "https://hugh.cdn.rumble.cloud/video/fw/s8/2/S/s/U/5/SsU5r.aaa.mp4",
+      "6": "https://1a-1791.com/video/fw/s8/2/c/I/U/5/cIU5r.aaa.mp4",
+      "7": "https://1a-1791.com/video/fw/s8/2/t/V/U/5/tVU5r.aaa.mp4",
+      "8": "https://1a-1791.com/video/fw/s8/2/j/x/V/5/jxV5r.aaa.mp4"
+      },     
+    "3": {
+      "1": "https://1a-1791.com/video/fww1/21/s8/2/k/g/j/3/kgj3y.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=930800640-930835756",
+      "2": "https://1a-1791.com/video/fww1/d7/s8/2/u/g/j/3/ugj3y.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=964294144-964330476",
+      "3": "https://1a-1791.com/video/fww1/bd/s8/2/i/W/e/5/iWe5y.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=902996992-903031004",
+      "4": "https://1a-1791.com/video/fww1/ad/s8/2/k/U/d/7/kUd7y.gaa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=910653952-910688140",
+      "5": "https://1a-1791.com/video/fww1/13/s8/2/q/z/h/9/qzh9y.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=2098241536-2098282965",
+      "6": "https://1a-1791.com/video/fww1/4b/s8/2/2/q/6/-/2q6-y.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1795746304-1795781890",
+      "7": "https://1a-1791.com/video/fww1/21/s8/2/-/K/8/a/-K8az.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1774493184-1774528249",
+      "8": "https://1a-1791.com/video/fww1/cf/s8/2/I/L/6/c/IL6cz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1878358016-1878395131",
+      "9": "https://1a-1791.com/video/fww1/59/s8/2/u/X/t/f/uXtfz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=1954918400-1954957056",
+      "10": "https://1a-1791.com/video/fww1/9b/s8/2/g/I/3/i/gI3iz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=2201274368-2201317930",
+      "11": "https://1a-1791.com/video/fww1/57/s8/2/C/I/3/i/CI3iz.haa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=2443384320-2443432720"
+       
+    } 
+  },
         "110316": {
     "1": {
       "1": "https://1a-1791.com/video/fww1/b5/s8/2/Z/z/i/0/Zzi0y.caa.tar?r_file=chunklist.m3u8&r_type=application%2Fvnd.apple.mpegurl&r_range=383497728-383526858",
