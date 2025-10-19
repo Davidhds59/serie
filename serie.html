@@ -431,7 +431,7 @@ function loadEpisode(seasonNum, episodeNum, ep) {
     return;
   }
 
-  jwplayer("myPlayer").setup({
+  const player = jwplayer("myPlayer").setup({
     file: videoUrl,
     image: ep.still_path ? imageBase + ep.still_path : '',
     autostart: false,
@@ -439,6 +439,23 @@ function loadEpisode(seasonNum, episodeNum, ep) {
     aspectratio: "16:9",
     type: detectType(videoUrl),
     skin: { name: "netflix" }
+  });
+
+  const saveKey = `progress_${serieId}_S${seasonNum}_E${episodeNum}`;
+  const savedTime = localStorage.getItem(saveKey);
+
+  player.on('ready', () => {
+    if (savedTime && !isNaN(savedTime)) {
+      player.seek(parseFloat(savedTime));
+    }
+  });
+
+  player.on('time', e => {
+    localStorage.setItem(saveKey, e.position);
+  });
+
+  player.on('complete', () => {
+    localStorage.removeItem(saveKey);
   });
 }
 
