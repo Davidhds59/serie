@@ -436,6 +436,7 @@ function loadEpisode(seasonNum, episodeNum, ep) {
     image: ep.still_path ? imageBase + ep.still_path : '',
     autostart: false,
     width: "100%",
+    mute: false,
     aspectratio: "16:9",
     type: detectType(videoUrl),
     skin: { name: "netflix" }
