@@ -98,7 +98,7 @@
     }
 
     .card h1 {
-      font-size: .7rem;
+      font-size: .3rem;
       padding: 0.5rem;
       text-align: center;
       margin: 0;
@@ -122,10 +122,17 @@
       display: flex;
       align-items: center;
       gap: 4px;
+      flex-direction: column;
     }
 
     .star {
       color: gold;
+    }
+
+    .year {
+      font-size: 0.55rem;
+      color: #ccc;
+      margin-top: 2px;
     }
     
     body::before {
@@ -251,6 +258,13 @@ function makeCard(series) {
   score.textContent = series.vote_average ? series.vote_average.toFixed(1) : 'N/A';
   rating.appendChild(star);
   rating.appendChild(score);
+
+  // 📅 Agregar año debajo del ranking
+  const year = document.createElement('div');
+  year.className = 'year';
+  year.textContent = series.first_air_date ? new Date(series.first_air_date).getFullYear() : '—';
+  rating.appendChild(year);
+
   card.appendChild(rating);
 
   const favBtn = document.createElement('button');
